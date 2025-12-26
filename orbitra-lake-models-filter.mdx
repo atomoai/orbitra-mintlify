@@ -1,0 +1,44 @@
+---
+title: filter
+sidebarTitle: filter
+---
+
+# `orbitra.lake.models.filter`
+
+## Classes
+
+### `Filter`
+
+
+Represents a filter for a column in a table.
+
+**Attributes:**
+- `column`: The name of the column to filter on.
+- `value`: The value to filter the column by.
+- `op`: The operation to apply for filtering.
+
+
+**Methods:**
+
+#### `get_pyiceberg_filter_expression`
+
+```python
+get_pyiceberg_filter_expression(self) -> LiteralPredicate
+```
+
+Convert the filter to a PyIceberg filter expression.
+
+**Returns:**
+- A PyIceberg filter expression corresponding to the filter.
+
+
+### `PartitionFilter`
+
+
+Represents a filter for a partition column in a table.
+
+**Attributes:**
+- `column`: The name of the partition column to filter on.
+- `value`: The value to filter the partition column by.
+- `op`: The operation to apply for filtering.
+

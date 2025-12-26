@@ -1,0 +1,144 @@
+---
+title: test_tables
+sidebarTitle: test_tables
+---
+
+# `orbitra.lake.tests.lake.test_tables`
+
+## Classes
+
+### `TestTables`
+
+
+Test suite for the client methods that alter catalog metadata.
+
+
+**Methods:**
+
+#### `test_add_and_remove_column`
+
+```python
+test_add_and_remove_column(self, table_name: str, snapshot: Snapshot)
+```
+
+Test adding and removing a column from a table.
+
+
+#### `test_add_invalid_column`
+
+```python
+test_add_invalid_column(self)
+```
+
+Test adding an invalid column to a table.
+
+
+#### `test_create_duplicate_namespace`
+
+```python
+test_create_duplicate_namespace(self)
+```
+
+Test creating a duplicate namespace in the catalog.
+
+
+#### `test_create_duplicate_table_and_invalid_namespace`
+
+```python
+test_create_duplicate_table_and_invalid_namespace(self)
+```
+
+Test creating a duplicate table in the catalog.
+
+
+#### `test_create_namespace`
+
+```python
+test_create_namespace(self)
+```
+
+Test creating a new namespace in the catalog.
+
+
+#### `test_create_table`
+
+```python
+test_create_table(self, table_name: str)
+```
+
+Test creating a new table in the catalog.
+
+
+#### `test_create_table_with_invalid_schema`
+
+```python
+test_create_table_with_invalid_schema(self)
+```
+
+Test creating a table with an invalid schema.
+
+
+#### `test_get_non_existent_table_metadata`
+
+```python
+test_get_non_existent_table_metadata(self)
+```
+
+Test retrieving metadata for a non-existent table.
+
+
+#### `test_get_table_metadata`
+
+```python
+test_get_table_metadata(self, table_name: str, snapshot: Snapshot)
+```
+
+Test retrieving metadata for a specific table.
+
+This test checks that the metadata is returned correctly and matches the expected structure.
+
+
+#### `test_list_namespaces`
+
+```python
+test_list_namespaces(self, snapshot: Snapshot)
+```
+
+Test listing all namespaces in the catalog.
+
+
+#### `test_list_tables`
+
+```python
+test_list_tables(self, snapshot: Snapshot)
+```
+
+Test listing all tables in a specific namespace.
+
+
+#### `test_list_tables_invalid_namespace`
+
+```python
+test_list_tables_invalid_namespace(self)
+```
+
+Test listing tables in a non-existent namespace.
+
+
+#### `test_remove_invalid_column`
+
+```python
+test_remove_invalid_column(self)
+```
+
+Test removing an invalid column from a table.
+
+
+#### `test_update_table`
+
+```python
+test_update_table(self)
+```
+
+Test updating a table.
+
