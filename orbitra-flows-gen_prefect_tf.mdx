@@ -1,0 +1,56 @@
+---
+title: gen_prefect_tf
+sidebarTitle: gen_prefect_tf
+---
+
+# `orbitra.flows.gen_prefect_tf`
+
+## Functions
+
+### `clean_resource_name`
+
+```python
+clean_resource_name(name: str) -> str
+```
+
+### `discover_flows`
+
+```python
+discover_flows()
+```
+
+### `discover_python_files`
+
+```python
+discover_python_files(base: pathlib.Path)
+```
+
+### `generate_terraform`
+
+```python
+generate_terraform(working_dir: str, with_backend: bool, work_pool: str, deployment_suffix: str = '', job_variables: Optional[list[str]] = None)
+```
+### `generate_tf_json`
+
+```python
+generate_tf_json(working_dir: str, work_pool: str, deployment_suffix: str = '', job_variables: Optional[dict[str, object]] = None)
+```
+
+### `resolve_entrypoint`
+
+```python
+resolve_entrypoint(module: str, object_name: str) -> str
+```
+
+### `resolve_prefect_flow`
+
+```python
+resolve_prefect_flow(module: str, object_name: str) -> Flow
+```
+
+### `write_boilerplate`
+
+```python
+write_boilerplate(with_backend: bool = True)
+```
+

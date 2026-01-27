@@ -1,0 +1,171 @@
+---
+title: test_data
+sidebarTitle: test_data
+---
+
+# `orbitra.lake.tests.lake.test_data`
+
+## Functions
+
+### `add_metadata`
+
+```python
+add_metadata(request)
+```
+
+
+Fixture to add metadata for the test class.
+
+
+## Classes
+
+### `TestData`
+
+
+Test suite for the client methods that alter table contents.
+
+
+**Methods:**
+
+#### `test_add_data`
+
+```python
+test_add_data(self, table_options: tuple[str, int], snapshot: Snapshot)
+```
+
+Test adding data to the table.
+
+It runs twice to ensure that partitions are created and overwritten correctly.
+
+
+#### `test_add_data_after_table_update`
+
+```python
+test_add_data_after_table_update(self, table_name: str, snapshot: Snapshot)
+```
+
+Test adding data to the table after updating the table schema.
+
+#### `test_add_data_invalid_column_type`
+
+```python
+test_add_data_invalid_column_type(self)
+```
+
+Test adding data with an invalid column type.
+
+
+#### `test_add_data_missing_column`
+
+```python
+test_add_data_missing_column(self, snapshot: Snapshot)
+```
+
+Test adding data with a missing column in the table schema.
+
+
+#### `test_add_data_with_new_column`
+
+```python
+test_add_data_with_new_column(self, table_name: str, snapshot: Snapshot)
+```
+
+Test adding data with a new column to the table.
+
+This test checks that data can be added to the table with a new column and verifies that the new column is present in the data.
+
+
+#### `test_add_empty_data`
+
+```python
+test_add_empty_data(self)
+```
+
+Test adding an empty DataFrame to the table.
+
+
+#### `test_data_non_existent_table`
+
+```python
+test_data_non_existent_table(self)
+```
+
+Test adding data to a non-existent table.
+
+
+#### `test_delete_data`
+
+```python
+test_delete_data(self, delete_options: tuple[str, list[dict]])
+```
+
+Test deleting data from the table based on a specific partition.
+
+This test checks that data can be deleted from the table and verifies that the data is no longer present after deletion.
+
+
+#### `test_filter_validation_errors`
+
+```python
+test_filter_validation_errors(self)
+```
+
+Test the filter validation errors.
+
+
+#### `test_get_data`
+
+```python
+test_get_data(self, get_options: tuple[str, list[dict], int], snapshot: Snapshot)
+```
+
+Test retrieving data from the table with various filters.
+
+The first element of the tuple is the table, the second is the filter criteria, and the third is the expected number of results.
+
+
+#### `test_get_data_with_limit`
+
+```python
+test_get_data_with_limit(self)
+```
+
+Test retrieving data with a limit.
+
+
+#### `test_invalid_delete_data`
+
+```python
+test_invalid_delete_data(self)
+```
+
+Test deleting data with invalid partition filters.
+
+
+#### `test_invalid_get_data`
+
+```python
+test_invalid_get_data(self)
+```
+
+Test retrieving data with invalid partition filters.
+
+
+#### `test_invalid_overwrite_data_by_custom_columns`
+
+```python
+test_invalid_overwrite_data_by_custom_columns(self)
+```
+
+Test overwriting data with invalid parameters.
+
+
+#### `test_overwrite_data_by_custom_columns`
+
+```python
+test_overwrite_data_by_custom_columns(self, overwrite_data_by_custom_columns_options: tuple[str, list[str], int, int], snapshot: Snapshot)
+```
+
+Test overwriting data into the table by custom columns.
+
+
