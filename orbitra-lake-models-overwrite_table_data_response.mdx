@@ -1,0 +1,30 @@
+---
+title: overwrite_table_data_response
+sidebarTitle: overwrite_table_data_response
+---
+
+# `orbitra.lake.models.overwrite_table_data_response`
+
+## Classes
+
+### `OverwriteTableDataResponse`
+
+
+Response DTO for overwriting partitions in a table.
+
+**Attributes:**
+- `modified_partitions`: List of partition values that were modified during the overwrite operation.
+- `inserted_rows`: The number of rows that were inserted as part of the overwrite operation.
+- `operation_id`: A unique id for the overwrite operation, useful for tracking and logging purposes.
+
+
+### `OverwriteDataByCustomColumnsResponse`
+
+
+Response DTO for overwriting data in a table by custom columns.
+
+**Attributes:**
+- `modified_custom_values`: List of custom values that were modified during the overwrite operation.
+- `inserted_rows`: The number of rows that were inserted as part of the overwrite operation.
+- `operation_id`: A unique id for the overwrite operation, useful for tracking and logging purposes.
+

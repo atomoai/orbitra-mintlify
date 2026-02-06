@@ -1,0 +1,369 @@
+---
+title: test_tables
+sidebarTitle: test_tables
+---
+
+# `orbitra.lake.tests.lake.test_tables`
+
+## Classes
+
+### `TestTables`
+
+
+Test suite for the client methods that alter catalog metadata.
+
+
+**Methods:**
+
+#### `test_add_and_remove_column`
+
+```python
+test_add_and_remove_column(self, table_name: str, snapshot: Snapshot)
+```
+
+Test adding and removing a column from a table.
+
+
+#### `test_add_invalid_column`
+
+```python
+test_add_invalid_column(self)
+```
+
+Test adding an invalid column to a table.
+
+
+#### `test_add_or_update_table_calls_create_or_update_table`
+
+```python
+test_add_or_update_table_calls_create_or_update_table(self)
+```
+
+Test that add_or_update_table calls create_or_update_table with the same parameters.
+
+
+#### `test_add_or_update_table_deprecation_warning`
+
+```python
+test_add_or_update_table_deprecation_warning(self)
+```
+
+Test that add_or_update_table raises a deprecation warning at the call site.
+
+
+#### `test_column_schema_equality_considers_exclude_from_hash`
+
+```python
+test_column_schema_equality_considers_exclude_from_hash(self)
+```
+
+Test that ColumnSchema equality comparison considers exclude_from_hash field.
+
+
+#### `test_column_schema_exclude_from_hash_default`
+
+```python
+test_column_schema_exclude_from_hash_default(self)
+```
+
+Test that ColumnSchema defaults exclude_from_hash to False.
+
+
+#### `test_create_duplicate_namespace`
+
+```python
+test_create_duplicate_namespace(self)
+```
+
+Test creating a duplicate namespace in the catalog.
+
+
+#### `test_create_duplicate_table_and_invalid_namespace`
+
+```python
+test_create_duplicate_table_and_invalid_namespace(self)
+```
+
+Test creating a duplicate table in the catalog.
+
+
+#### `test_create_namespace`
+
+```python
+test_create_namespace(self)
+```
+
+Test creating a new namespace in the catalog.
+
+
+#### `test_create_or_update_table_existing_table_with_hash_include_hash_false`
+
+```python
+test_create_or_update_table_existing_table_with_hash_include_hash_false(self)
+```
+
+Test that create_or_update_table removes __orbitra_hash__ column from existing table when include_hash=False.
+
+
+#### `test_create_or_update_table_existing_table_with_hash_preserved`
+
+```python
+test_create_or_update_table_existing_table_with_hash_preserved(self)
+```
+
+Test that create_or_update_table preserves __orbitra_hash__ column to existing table with hash when include_hash=True.
+
+
+#### `test_create_or_update_table_existing_table_without_hash_include_hash_true`
+
+```python
+test_create_or_update_table_existing_table_without_hash_include_hash_true(self)
+```
+
+Test that create_or_update_table adds __orbitra_hash__ column to existing table without hash when include_hash=True.
+
+
+#### `test_create_or_update_table_new_table_with_include_hash_default`
+
+```python
+test_create_or_update_table_new_table_with_include_hash_default(self)
+```
+
+Test that create_or_update_table defaults to include_hash=False for new table.
+
+
+#### `test_create_or_update_table_new_table_with_include_hash_false`
+
+```python
+test_create_or_update_table_new_table_with_include_hash_false(self)
+```
+
+Test that create_or_update_table does NOT add __orbitra_hash__ column for new table when include_hash=False.
+
+
+#### `test_create_or_update_table_new_table_with_include_hash_true`
+
+```python
+test_create_or_update_table_new_table_with_include_hash_true(self)
+```
+
+Test that create_or_update_table adds __orbitra_hash__ column for new table when include_hash=True.
+
+
+#### `test_create_table`
+
+```python
+test_create_table(self, table_name: str)
+```
+
+Test creating a new table in the catalog.
+
+
+#### `test_create_table_with_include_hash_default`
+
+```python
+test_create_table_with_include_hash_default(self)
+```
+
+Test that create_table defaults to include_hash=False (no hash column).
+
+
+#### `test_create_table_with_include_hash_false`
+
+```python
+test_create_table_with_include_hash_false(self)
+```
+
+Test that create_table does NOT add __orbitra_hash__ column when include_hash=False.
+
+
+#### `test_create_table_with_include_hash_true`
+
+```python
+test_create_table_with_include_hash_true(self)
+```
+
+Test that create_table adds __orbitra_hash__ column when include_hash=True.
+
+
+#### `test_create_table_with_invalid_schema`
+
+```python
+test_create_table_with_invalid_schema(self)
+```
+
+Test creating a table with an invalid schema.
+
+
+#### `test_default_kind`
+
+```python
+test_default_kind(self)
+```
+
+Test that the default kind for columns is 'regular'.
+
+
+#### `test_exclude_from_hash_persisted_in_table_metadata`
+
+```python
+test_exclude_from_hash_persisted_in_table_metadata(self)
+```
+
+Test that exclude_from_hash field is correctly persisted and retrieved from table metadata.
+
+
+#### `test_excluded_column_changes_produce_same_hash`
+
+```python
+test_excluded_column_changes_produce_same_hash(self)
+```
+
+Test that changes in excluded columns do not affect the row hash.
+
+
+#### `test_get_non_existent_table_metadata`
+
+```python
+test_get_non_existent_table_metadata(self)
+```
+
+Test retrieving metadata for a non-existent table.
+
+
+#### `test_get_table_hash_sum_returns_none_for_empty_table`
+
+```python
+test_get_table_hash_sum_returns_none_for_empty_table(self)
+```
+
+Test that get_table_hash_sum returns None when the table is empty.
+
+
+#### `test_get_table_hash_sum_returns_none_for_legacy_string_hash`
+
+```python
+test_get_table_hash_sum_returns_none_for_legacy_string_hash(self)
+```
+
+Test that get_table_hash_sum returns None when __orbitra_hash__ column is of type string (legacy).
+
+#### `test_get_table_hash_sum_returns_none_when_hash_column_missing`
+
+```python
+test_get_table_hash_sum_returns_none_when_hash_column_missing(self)
+```
+
+Test that get_table_hash_sum returns None when __orbitra_hash__ column doesn't exist.
+
+
+#### `test_get_table_hash_sum_returns_sum_of_hashes`
+
+```python
+test_get_table_hash_sum_returns_sum_of_hashes(self)
+```
+
+Test that get_table_hash_sum returns the sum of hash values when table has data.
+
+
+#### `test_get_table_metadata`
+
+```python
+test_get_table_metadata(self, table_name: str, snapshot: Snapshot)
+```
+
+Test retrieving metadata for a specific table.
+
+This test checks that the metadata is returned correctly and matches the expected structure.
+
+
+#### `test_hash_value_matches_known_hashes`
+
+```python
+test_hash_value_matches_known_hashes(self)
+```
+
+Test that the generated hashes match known precomputed hash values.
+
+
+#### `test_legacy_string_hash_column_not_generated`
+
+```python
+test_legacy_string_hash_column_not_generated(self)
+```
+
+Test that hash is not generated when __orbitra_hash__ column is of type string (legacy tables).
+
+
+#### `test_list_namespaces`
+
+```python
+test_list_namespaces(self, snapshot: Snapshot)
+```
+
+Test listing all namespaces in the catalog.
+
+
+#### `test_list_tables`
+
+```python
+test_list_tables(self, snapshot: Snapshot)
+```
+
+Test listing all tables in a specific namespace.
+
+
+#### `test_list_tables_invalid_namespace`
+
+```python
+test_list_tables_invalid_namespace(self)
+```
+
+Test listing tables in a non-existent namespace.
+
+
+#### `test_non_excluded_column_changes_produce_different_hash`
+
+```python
+test_non_excluded_column_changes_produce_different_hash(self)
+```
+
+Test that changes in non-excluded columns produce different row hashes.
+
+
+#### `test_remove_hash_column`
+
+```python
+test_remove_hash_column(self)
+```
+
+Test removing __orbitra_hash__ column from a table.
+
+
+#### `test_remove_invalid_column`
+
+```python
+test_remove_invalid_column(self)
+```
+
+Test removing an invalid column from a table.
+
+
+#### `test_update_exclude_from_hash`
+
+```python
+test_update_exclude_from_hash(self)
+```
+
+Test that exclude_from_hash field can be updated via create_or_update_table.
+
+
+#### `test_update_table`
+
+```python
+test_update_table(self)
+```
+
+Test updating a table.
+
+

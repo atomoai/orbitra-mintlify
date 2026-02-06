@@ -1,0 +1,88 @@
+---
+title: test_generate_row_hashes
+sidebarTitle: test_generate_row_hashes
+---
+
+# `orbitra.lake.tests.lake.test_generate_row_hashes`
+
+## Classes
+
+### `TestGenerateRowHashes`
+
+
+Unit tests for the _generate_row_hashes function.
+
+
+**Methods:**
+
+#### `test_column_order_does_not_affect_hash`
+
+```python
+test_column_order_does_not_affect_hash(self)
+```
+
+Test that column order in the DataFrame does not affect the hash.
+
+
+#### `test_different_data_produces_different_hash`
+
+```python
+test_different_data_produces_different_hash(self)
+```
+
+Test that different rows produce different hashes.
+
+
+#### `test_exclude_columns_none_includes_all_columns`
+
+```python
+test_exclude_columns_none_includes_all_columns(self)
+```
+
+Test that exclude_columns=None includes all columns.
+
+
+#### `test_exclude_columns_removes_columns_from_hash`
+
+```python
+test_exclude_columns_removes_columns_from_hash(self)
+```
+
+Test that excluded columns are not included in the hash calculation.
+
+
+#### `test_exclude_multiple_columns`
+
+```python
+test_exclude_multiple_columns(self)
+```
+
+Test that multiple columns can be excluded.
+
+#### `test_known_hash_values`
+
+```python
+test_known_hash_values(self)
+```
+
+Test that specific inputs produce known hash values for backward compatibility.
+
+
+#### `test_same_data_produces_same_hash`
+
+```python
+test_same_data_produces_same_hash(self)
+```
+
+Test that identical rows produce identical hashes.
+
+
+#### `test_signed_hash_range`
+
+```python
+test_signed_hash_range(self)
+```
+
+Test that hashes are within signed 64-bit integer range.
+
+

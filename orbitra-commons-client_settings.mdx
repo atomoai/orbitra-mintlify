@@ -1,0 +1,60 @@
+---
+title: client_settings
+sidebarTitle: client_settings
+---
+
+# `orbitra.commons.client_settings`
+
+## Functions
+
+### `get_client_settings`
+
+```python
+get_client_settings(environment: str = 'prod') -> ClientSettings
+```
+
+
+Get the client settings for the Orbitra application.
+
+**Returns:**
+- An instance of ClientSettings with the configured values.
+
+
+## Classes
+
+### `ClientSettings`
+
+
+Client settings for the Orbitra application.
+
+This class is used to manage configuration settings for the client.
+
+
+**Methods:**
+
+#### `orbitra_authority`
+
+```python
+orbitra_authority(self) -> str
+```
+
+Return the authority domain for the application.
+
+
+#### `orbitra_client_id`
+
+```python
+orbitra_client_id(self) -> str
+```
+
+Return the client ID for the application.
+
+
+#### `orbitra_token_issuer`
+
+```python
+orbitra_token_issuer(self) -> list[str]
+```
+
+Return the token issuer domain for the application.
+

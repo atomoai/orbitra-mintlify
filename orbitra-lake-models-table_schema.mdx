@@ -1,0 +1,58 @@
+---
+title: table_schema
+sidebarTitle: table_schema
+---
+
+# `orbitra.lake.models.table_schema`
+
+## Classes
+
+### `ColumnSchema`
+
+
+Schema for a column in a table.
+
+**Attributes:**
+- `name`: The name of the column.
+- `type`: The data type of the column, represented as a string.
+- `kind`: The kind of column,
+- "partition" for columns that are used for partitioning the table,
+- "regular" (default) for regular columns.
+- `exclude_from_hash`: If True, this column will be excluded from the row hash calculation.
+
+
+**Methods:**
+
+#### `ensure_name_has_no_special_characters`
+
+```python
+ensure_name_has_no_special_characters(cls, value: str) -> str
+```
+
+Ensure the column name does not contain special characters.
+
+Only alphanumeric characters and underscores are allowed.
+
+
+### `TableSchema`
+
+
+Schema for a table in a database.
+
+**Attributes:**
+- `name`: The name of the table.
+- `columns`: A list of ColumnSchema objects representing the columns in the table.
+
+
+**Methods:**
+
+#### `ensure_name_has_no_special_characters`
+
+```python
+ensure_name_has_no_special_characters(cls, value: str) -> str
+```
+
+Ensure the table name does not contain special characters.
+
+Only alphanumeric characters and underscores are allowed.
+

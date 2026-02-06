@@ -1,0 +1,129 @@
+---
+title: pyiceberg
+sidebarTitle: pyiceberg
+---
+
+# `orbitra.lake.db.pyiceberg`
+
+## Classes
+
+### `PyIcebergDB`
+
+
+Abstract base class for PyIceberg database operations.
+
+**Attributes:**
+- `settings`: Configuration settings for the database connection.
+
+catalog (Catalog): The catalog used to interact with the database.
+
+
+**Methods:**
+
+#### `add_column_to_table`
+
+```python
+add_column_to_table(self, namespace: str, table_name: str, column: str, column_type: AllowedColumnTypes) -> bool
+```
+
+#### `create_namespace`
+
+```python
+create_namespace(self, namespace: str) -> bool
+```
+
+#### `create_table`
+
+```python
+create_table(self, namespace: str, table: TableSchema) -> bool
+```
+
+#### `delete_data`
+
+```python
+delete_data(self, namespace: str, table_name: str, partition_filters: list[PartitionFilter]) -> str
+```
+
+#### `get_table_data`
+
+```python
+get_table_data(self, namespace: str, table_name: str, scan_filters: list[Filter], limit: Optional[int] = None) -> pd.DataFrame
+```
+
+#### `get_table_hash_sum`
+
+```python
+get_table_hash_sum(self, namespace: str, table_name: str) -> Optional[int]
+```
+
+#### `get_table_metadata`
+
+```python
+get_table_metadata(self, namespace: str, table_name: str) -> TableSchema
+```
+
+#### `get_table_partition_hash_sums`
+
+```python
+get_table_partition_hash_sums(self, namespace: str, table_name: str, partition_columns: list[str], partitions_filter: Optional[list[tuple]] = None) -> Optional[dict[tuple, int]]
+```
+#### `list_namespaces`
+
+```python
+list_namespaces(self) -> list[str]
+```
+
+#### `list_tables`
+
+```python
+list_tables(self, namespace: str) -> list[str]
+```
+
+#### `overwrite_data`
+
+```python
+overwrite_data(self, namespace: str, table_name: str, data: pd.DataFrame) -> str
+```
+
+#### `overwrite_data_by_custom_columns`
+
+```python
+overwrite_data_by_custom_columns(self, namespace: str, table_name: str, custom_columns: list[str], data: pd.DataFrame) -> str
+```
+
+#### `overwrite_partitions_data`
+
+```python
+overwrite_partitions_data(self, namespace: str, table_name: str, data: pd.DataFrame) -> str
+```
+
+#### `refresh_token`
+
+```python
+refresh_token(self, token: str) -> None
+```
+
+#### `remove_column_from_table`
+
+```python
+remove_column_from_table(self, namespace: str, table_name: str, column: str) -> bool
+```
+
+#### `run_query`
+
+```python
+run_query(self, namespace: str, query: str, engine: Literal['local', 'remote'] = 'local') -> pd.DataFrame
+```
+
+#### `set_table_properties`
+
+```python
+set_table_properties(self, namespace: str, table_name: str, properties: dict[str, str]) -> bool
+```
+
+#### `update_column_type`
+
+```python
+update_column_type(self, namespace: str, table_name: str, column: str, column_type: AllowedColumnTypes) -> bool
+```
+

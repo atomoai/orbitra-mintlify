@@ -1,0 +1,664 @@
+---
+title: client
+sidebarTitle: client
+---
+
+# `orbitra.lake.client`
+
+## Functions
+
+### `get_lake_client`
+
+```python
+get_lake_client(environment: str = 'prod', credential: Optional[TokenCredential] = None) -> OrbitraLakeClient
+```
+
+
+Get the Orbitra Lake client based on the environment.
+
+**Args:**
+- `environment`: Environment to use ("prod" or "dev"). Defaults to "prod".
+- `credential`: Synchronous Azure credential for API operations.
+
+**Returns:**
+- Configured lake client instance.
+
+
+## Classes
+
+### `OrbitraLakeClient`
+
+
+Client for interacting with the Orbitra Lake database.
+
+
+**Methods:**
+
+#### `add_column_to_table`
+
+```python
+add_column_to_table(self, namespace: str, table_name: str, column: str, column_type: AllowedColumnTypes) -> TableSchema
+```
+
+Add a new column to an existing table.
+
+**Args:**
+- `namespace`: The namespace where the table is located.
+- `table_name`: The name of the table to add the column to.
+- `column`: The name of the new column to add.
+- `column_type`: The data type of the new column.
+
+**Returns:**
+- The updated schema of the table after adding the new column.
+
+**Raises:**
+- `LakeError`: If the column is invalid, already exists or if the table does not exist.
+
+**Examples:**
+
+```python
+from orbitra.lake import get_lake_client
+client = get_lake_client()
+updated_table = client.add_column_to_table(
+    namespace="playground",
+    table_name="my_table",
+    column="new_column",
+    column_type="string"
+)
+```
+
+
+#### `add_or_update_table`
+
+```python
+add_or_update_table(self, namespace: str, table: TableSchema, allow_column_removal: bool = False) -> TableSchema
+```
+
+Deprecated: Use create_or_update_table instead.
+
+
+#### `create_or_update_table`
+
+```python
+create_or_update_table(self, namespace: str, table: TableSchema, allow_column_removal: bool = False, include_hash: bool = False) -> TableSchema
+```
+
+Create or update a table.
+
+This method will create the table if it does not exist, or update it if it does.
+Updates are only allowed in regular columns. Partition columns are not allowed to be updated.
+
+**Args:**
+- `namespace`: The namespace where the table is located.
+- `table`: The schema of the table to create or update.
+- `allow_column_removal`: Whether to allow column removal.
+- `include_hash`: Whether to include the __orbitra_hash__ column. Defaults to False.
+
+**Returns:**
+- The updated schema of the table after creating or updating it.
+
+**Raises:**
+- `LakeError`: If there are changes in partition columns or if a column is removed and allow_column_removal is False.
+
+**Examples:**
+
+```python
+from orbitra.lake.models.table_schema import TableSchema, ColumnSchema
+from orbitra.lake import get_lake_client
+client = get_lake_client()
+updated_table = client.create_or_update_table(
+    namespace="playground",
+    table=TableSchema(
+        name="my_table",
+        columns=[
+            ColumnSchema(name="column1", type="string", kind="regular"),
+            ColumnSchema(name="column2", type="int", kind="regular")
+        ]
+    ),
+    allow_column_removal=False
+)
+```
+* Note: In the example above, if "my_table" already exists and has a different schema,
+    the method will remove columns not present in the new schema if allow_column_removal is set to True.
+
+
+#### `create_table`
+
+```python
+create_table(self, namespace: str, table: TableSchema, include_hash: bool = False) -> TableSchema
+```
+
+Create a new table in the specified namespace.
+
+**Args:**
+- `namespace`: The namespace where the table should be created.
+- `table`: The schema of the table to create.
+- `include_hash`: Whether to include the __orbitra_hash__ column. Defaults to False.
+
+**Returns:**
+- The schema of the created table.
+
+**Raises:**
+- `LakeError`: If the table already exists or if the namespace does not exist.
+
+**Examples:**
+
+```python
+from orbitra.lake.models.table_schema import TableSchema, ColumnSchema
+from orbitra.lake import get_lake_client
+
+client = get_lake_client()
+table_schema = TableSchema(
+        name='my_table',
+        columns=[
+            ColumnSchema(name="id", type="int", kind="regular"),
+            ColumnSchema(name="name", type="string", kind="regular"),
+            ColumnSchema(name="value", type="double", kind="regular"),
+        ]
+    )
+
+created_table = client.create_table(namespace="playground", table=table_schema)
+```
+
+
+#### `delete_data`
+
+```python
+delete_data(self, namespace: str, table_name: str, partition_filters: list[PartitionFilter]) -> str
+```
+
+Delete data from a table based on partition filters.
+
+This method deletes data from a table based on the provided partition filters.
+Partition filters are combined with an AND operation.
+If the table has no partition columns, it deletes the entire table data.
+
+**Args:**
+- `namespace`: The namespace where the table is located.
+- `table_name`: The name of the table to delete data from.
+- `partition_filters`: A list of partition filters to apply for the delete operation.
+Must be empty if the table has no partition columns.
+
+**Returns:**
+- An operation ID for tracking the delete operation.
+
+**Raises:**
+- `LakeError`: If the table does not exist or if the partition filters are invalid.
+
+**Examples:**
+
+```python
+from orbitra.lake import get_lake_client
+from orbitra.lake.models import PartitionFilter
+
+client = get_lake_client()
+filter_example = [PartitionFilter(column="client", value=0, op= "<="), PartitionFilter(column="date", value="2023-01-01", op=">=")]
+
+operation_id = client.delete_data(namespace="playground",
+    table_name="my_table", partition_filters=filter_example)
+```
+
+
+#### `get_processed_flag`
+
+```python
+get_processed_flag(self, full_filename: str, namespace: str) -> bool
+```
+
+Get the processed flag for a raw file.
+
+**Args:**
+- `full_filename`: The full path and filename of the raw file to get the processed flag for.
+- `namespace`: Namespace used to compose the container name.
+The effective container is
+`settings.orbitra_lake_raw_container_prefix + namespace`.
+
+**Returns:**
+- The processed flag value.
+
+**Examples:**
+
+```python
+from orbitra.lake import get_lake_client
+client = get_lake_client()
+is_processed = client.get_processed_flag("test.parquet", namespace="playground")
+```
+
+#### `get_raw_file_system`
+
+```python
+get_raw_file_system(self, namespace: str) -> AbstractFileSystem
+```
+
+Get a filesystem interface for the raw storage.
+
+This method returns a filesystem interface (e.g., AzureBlobFileSystem or
+LocalFileSystem) for direct file operations on the raw storage beyond
+the standard save/read operations.
+
+**Args:**
+- `namespace`: Logical namespace used to compose container/directory name.
+
+**Returns:**
+- A filesystem interface for accessing raw storage.
+
+**Examples:**
+
+```python
+from orbitra.lake import get_lake_client
+client = get_lake_client()
+fs = client.get_raw_file_system(namespace="playground")
+# Use fsspec API for advanced operations
+files = fs.ls("/")
+fs.info("path/to/file.parquet")
+```
+
+
+#### `get_table_data`
+
+```python
+get_table_data(self, namespace: str, table_name: str, scan_filters: list[Filter], limit: Optional[int] = None) -> pd.DataFrame
+```
+
+Retrieve data from a table based on scan filters.
+
+This method retrieves data from a table based on the provided scan filters.
+Scan filters are combined with an AND operation.
+If an empty list of scan filters is provided, it retrieves all data from the table.
+
+**Args:**
+- `namespace`: The namespace where the table is located.
+- `table_name`: The name of the table to retrieve data from.
+- `scan_filters`: A list of column filters to apply for the query.
+- `limit`: The maximum number of rows to retrieve, defaults to None for all rows.
+
+**Returns:**
+- pd.DataFrame: A DataFrame containing the data retrieved from the table.
+
+**Raises:**
+- `LakeError`: If the table does not exist or if the scan filters are invalid.
+
+**Examples:**
+
+```python
+from orbitra.lake import get_lake_client
+from orbitra.lake.models.filter import Filter
+client = get_lake_client()
+df = client.get_table_data(namespace="playground", table_name="my_table", scan_filters=[Filter(column="column1", value="5", op="==")])
+```
+* Note: If you pass `scan_filters = []`, it will retrieve all data from the table.
+
+
+#### `get_table_metadata`
+
+```python
+get_table_metadata(self, namespace: str, table_name: str) -> TableSchema
+```
+
+Retrieve the metadata of a table.
+
+**Args:**
+- `namespace`: The namespace where the table is located.
+- `table_name`: The name of the table to retrieve metadata for.
+
+**Returns:**
+- The schema of the table if it exists.
+
+**Raises:**
+- `LakeError`: If the table does not exist.
+
+**Examples:**
+
+```python
+from orbitra.lake import get_lake_client
+client = get_lake_client()
+table_schema = client.get_table_metadata(namespace="playground", table_name="my_table")
+```
+
+
+#### `list_namespaces`
+
+```python
+list_namespaces(self) -> list[str]
+```
+
+List all namespaces in the database.
+
+**Returns:**
+- list\[str]: A list of namespace names.
+
+**Examples:**
+
+```python
+from orbitra.lake import get_lake_client
+client = get_lake_client()
+namespaces = client.list_namespaces()
+```
+
+
+#### `list_tables`
+
+```python
+list_tables(self, namespace: str) -> list[str]
+```
+
+List all tables in the specified namespace.
+
+**Args:**
+- `namespace`: The namespace to list tables from.
+
+**Returns:**
+- list\[str]: A list of table names in the specified namespace.
+
+**Raises:**
+- `LakeError`: If the namespace does not exist.
+
+**Examples:**
+
+```python
+from orbitra.lake import get_lake_client
+client = get_lake_client()
+tables = client.list_tables(namespace="playground")
+```
+
+
+#### `overwrite_data`
+
+```python
+overwrite_data(self, namespace: str, table_name: str, df: pd.DataFrame, check_hash: bool = False) -> OverwriteTableDataResponse
+```
+
+Overwrite partitions data in a table.
+
+This method overwrites the data in a table based on the partition columns present in the DataFrame.
+If the table has no partition columns, it overwrites the entire table data.
+
+**Args:**
+- `namespace`: The namespace where the table is located.
+- `table_name`: The name of the table to overwrite data in.
+- `df`: The DataFrame containing the data to overwrite in the table.
+- `check_hash`: If True, uses hash-based change detection to only overwrite data
+when hashes differ. Requires the table to have a hash column. Defaults to False.
+
+**Returns:**
+- A response object containing information about the modified partitions and inserted rows.
+
+**Raises:**
+- `LakeError`: If the table does not exist, if the DataFrame contains data not matching the table schema,
+or if check_hash is True and the table has no hash column.
+
+**Examples:**
+
+```python
+from orbitra.lake import get_lake_client
+import pandas as pd
+
+client = get_lake_client()
+df = pd.DataFrame({"partition_col": [1, 2], "data_col": ["A", "B"]})
+response = client.overwrite_data(namespace="playground", table_name="my_table", df=df)
+```
+
+
+#### `overwrite_data_by_custom_columns`
+
+```python
+overwrite_data_by_custom_columns(self, namespace: str, table_name: str, custom_columns: list[str], df: pd.DataFrame) -> OverwriteDataByCustomColumnsResponse
+```
+
+Overwrite data into a table by custom columns.
+
+This method overwrites data into a table based on the provided custom columns and data.
+It will delete data based on the values in the custom columns and then insert the given data frame.
+
+**Args:**
+- `namespace`: The namespace where the table is located.
+- `table_name`: The name of the table to overwrite data into.
+- `custom_columns`: A list of columns to use as custom columns.
+- `df`: The DataFrame containing the data to overwrite.
+
+**Returns:**
+- A response object containing information about the modified custom values and inserted rows.
+
+**Raises:**
+- `LakeError`: If the table does not exist or if the custom columns are invalid or don't match the table schema.
+
+**Examples:**
+
+Basic example with a simple custom column:
+```python
+from orbitra.lake import get_lake_client
+import pandas as pd
+
+client = get_lake_client()
+df = pd.DataFrame({"custom_col": [1, 2], "data_col": ["A", "B"]})
+response = client.overwrite_data_by_custom_columns(
+    namespace="playground",
+    table_name="my_table",
+    custom_columns=["custom_col"],
+    df=df
+)
+```
+
+Example with partition column included in custom_columns:
+```python
+from orbitra.lake import get_lake_client
+import pandas as pd
+
+# For a table with 'report_date' as partition column and 'client_id' as regular column,
+# include the partition column in custom_columns to overwrite specific partitions.
+client = get_lake_client()
+df = pd.DataFrame({
+    "report_date": ["2025-01-01", "2025-01-01"],
+    "client_id": ["C001", "C002"],
+    "value": [100.0, 200.0]
+})
+response = client.overwrite_data_by_custom_columns(
+    namespace="playground",
+    table_name="daily_report",
+    custom_columns=["report_date", "client_id"],  # partition + regular columns
+    df=df
+)
+```
+
+
+#### `read_raw_bytes_from_blob`
+
+```python
+read_raw_bytes_from_blob(self, full_filename: str, namespace: str) -> io.BytesIO
+```
+
+Read a raw bytes object from the specified blob storage location.
+
+**Args:**
+- `full_filename`: The full path and filename of the raw bytes object to read from the raw storage container.
+- `namespace`: Namespace used to compose the container name.
+The effective container is
+`settings.orbitra_lake_raw_container_prefix + namespace`.
+
+**Returns:**
+- io.BytesIO: The raw bytes object read from the blob storage.
+
+**Examples:**
+
+```python
+from orbitra.lake import get_lake_client
+client = get_lake_client()
+bytes_io = client.read_raw_bytes_from_blob("test.parquet", namespace="playground")
+```
+
+
+#### `read_raw_df_from_blob`
+
+```python
+read_raw_df_from_blob(self, full_filename: str, namespace: str) -> pd.DataFrame
+```
+
+Reads a raw Parquet file from the specified blob storage location and returns its contents as a pandas DataFrame.
+
+**Args:**
+- `full_filename`: The full path and filename of the Parquet file to read from the raw storage container.
+- `namespace`: Namespace used to compose the container name.
+The effective container is
+`settings.orbitra_lake_raw_container_prefix + namespace`.
+
+**Returns:**
+- pd.DataFrame: The contents of the Parquet file as a pandas DataFrame.
+
+**Examples:**
+
+```python
+from orbitra.lake import get_lake_client
+client = get_lake_client()
+df = client.read_raw_df_from_blob("test.parquet", namespace="playground")
+```
+
+
+#### `remove_column_from_table`
+
+```python
+remove_column_from_table(self, namespace: str, table_name: str, column: str) -> TableSchema
+```
+
+Remove a column from an existing table.
+
+**Args:**
+- `namespace`: The namespace where the table is located.
+- `table_name`: The name of the table to remove the column from.
+- `column`: The name of the column to remove.
+
+**Returns:**
+- The updated schema of the table after removing the column.
+
+**Raises:**
+- `LakeError`: If the table or column does not exist or if it is a reserved column.
+
+**Examples:**
+
+```python
+from orbitra.lake import get_lake_client
+client = get_lake_client()
+updated_table = client.remove_column_from_table(
+    namespace="playground",
+    table_name="my_table",
+    column="old_column"
+)
+```
+
+
+#### `run_query`
+
+```python
+run_query(self, namespace: str, query: str, engine: Literal['local', 'remote'] = 'local') -> pd.DataFrame
+```
+
+Run a query using the selected environment as query engine.
+
+**Args:**
+- `namespace`: The namespace to run the query in.
+- `query`: The query to run.
+- `engine`: The engine to use for the query.
+
+**Returns:**
+- pd.DataFrame: A DataFrame containing the retrieved data.
+
+**Raises:**
+- `LakeError`: If the query is invalid or if the engine is not supported.
+
+**Examples:**
+
+```python
+from orbitra.lake import get_lake_client
+client = get_lake_client()
+query = "SELECT * FROM my_table WHERE column1 = 'value1'"
+df = client.run_query(namespace="playground", query=query, engine="local")
+```
+
+
+#### `save_raw_bytes_to_blob`
+
+```python
+save_raw_bytes_to_blob(self, bytes_io: io.BytesIO, full_filename: str, namespace: str) -> bool
+```
+
+Save a bytes object as a raw blob in Azure Blob Storage.
+
+**Args:**
+- `bytes_io`: The bytes object to persist.
+- `full_filename`: The blob path, including virtual directories,
+e.g. `"finance/2025/09/transactions.parquet"`.
+- `namespace`: Namespace used to compose the container name.
+The effective container is
+`settings.orbitra_lake_raw_container_prefix + namespace`.
+
+**Returns:**
+- True if the bytes object was stored, False if it already exists and is the same.
+
+**Examples:**
+
+```python
+from orbitra.lake import get_lake_client
+import io
+bytes_io = io.BytesIO(b"Hello, world!")
+client = get_lake_client()
+result = client.save_raw_bytes_to_blob(bytes_io, "test.txt", namespace="playground")
+```
+
+
+#### `save_raw_df_to_blob`
+
+```python
+save_raw_df_to_blob(self, df: pd.DataFrame, full_filename: str, namespace: str) -> bool
+```
+
+Save a DataFrame as a Parquet blob in Azure Blob Storage.
+
+The DataFrame is serialized to Parquet in memory and uploaded
+to the configured storage account and container. Existing blobs
+will be overwritten.
+
+**Args:**
+- `df`: The DataFrame to persist.
+- `full_filename`: The blob path, including virtual directories,
+e.g. `"finance/2025/09/transactions.parquet"`.
+- `namespace`: Namespace used to compose the container name.
+The effective container is
+`settings.orbitra_lake_raw_container_prefix + namespace`.
+
+**Returns:**
+- True if the DataFrame was stored, False if it already exists and is the same.
+
+**Examples:**
+
+```python
+from orbitra.lake import get_lake_client
+import pandas as pd
+df = pd.DataFrame({"id": [1, 2], "value": ["A", "B"]})
+client = get_lake_client()
+result = client.save_raw_df_to_blob(df, "test.parquet", namespace="playground")
+```
+
+
+#### `set_processed_flag`
+
+```python
+set_processed_flag(self, full_filename: str, namespace: str, is_processed: bool) -> None
+```
+
+Set the processed flag for a raw file.
+
+**Args:**
+- `full_filename`: The full path and filename of the raw file to set the processed flag for.
+- `namespace`: Namespace used to compose the container name.
+The effective container is
+`settings.orbitra_lake_raw_container_prefix + namespace`.
+- `is_processed`: The processed flag value to set.
+
+**Examples:**
+
+```python
+from orbitra.lake import get_lake_client
+client = get_lake_client()
+client.set_processed_flag("test.parquet", namespace="playground", is_processed=True)
+```
+
+

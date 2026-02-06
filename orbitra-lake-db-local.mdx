@@ -1,0 +1,34 @@
+---
+title: local
+sidebarTitle: local
+---
+
+# `orbitra.lake.db.local`
+
+## Classes
+
+### `LocalDB`
+
+
+Concrete implementation of PyIcebergDB for local SQLite catalog.
+
+
+**Methods:**
+
+#### `close`
+
+```python
+close(self) -> None
+```
+
+Close the SQLite catalog connection to release file locks.
+
+#### `refresh_token`
+
+```python
+refresh_token(self, token: str) -> None
+```
+
+Refresh token, closing the old SQLite connection first to release file locks.
+
+

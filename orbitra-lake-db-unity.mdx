@@ -1,0 +1,32 @@
+---
+title: unity
+sidebarTitle: unity
+---
+
+# `orbitra.lake.db.unity`
+
+## Classes
+
+### `UnityDB`
+
+
+Concrete implementation of PyIcebergDB for Unity Catalog.
+
+**Attributes:**
+- `token`: Authentication token for accessing Unity Catalog.
+- `settings`: Configuration settings for the database connection.
+
+
+**Methods:**
+
+#### `refresh_token`
+
+```python
+refresh_token(self, token: str) -> None
+```
+
+#### `run_query`
+
+```python
+run_query(self, namespace: str, query: str, engine: Literal['local', 'remote'] = 'local') -> pd.DataFrame
+```

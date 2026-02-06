@@ -1,0 +1,101 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "colors": {
+    "dark": "#15803D",
+    "light": "#07C983",
+    "primary": "#16A34A"
+  },
+  "contextual": {
+    "options": [
+      "copy",
+      "view",
+      "chatgpt",
+      "claude",
+      "perplexity",
+      "mcp",
+      "cursor",
+      "vscode"
+    ]
+  },
+  "favicon": "favicon.svg",
+  "footer": {
+    "socials": {
+      "linkedin": "https://www.linkedin.com/company/atomoai/"
+    }
+  },
+  "logo": {
+    "dark": "favicon.svg",
+    "light": "favicon.svg"
+  },
+  "name": "Orbitra",
+  "navbar": {
+    "links": [
+      {
+        "href": "mailto:contato@atomo.ai",
+        "label": "Support"
+      }
+    ],
+    "primary": {
+      "href": "https://www.atomo.ai",
+      "label": "atomo.ai",
+      "type": "button"
+    }
+  },
+  "navigation": {
+    "global": {},
+    "tabs": [
+      {
+        "tab": "Getting started",
+        "pages": [
+          "get_started",
+          "quick_setup",
+          "lake-getting_started"
+        ]
+      },
+      {
+        "groups": [
+          {
+            "group": "Commons SDK",
+            "pages": [
+              "orbitra-commons-auth-azure"
+            ]
+          }
+        ],
+        "tab": "Commons SDK (v0.4.4)"
+      },
+      {
+        "groups": [
+          {
+            "group": "Flows SDK",
+            "pages": [
+              "orbitra-flows-orbitra_deploy"
+            ]
+          }
+        ],
+        "tab": "Flows SDK (v0.1.8)"
+      },
+      {
+        "groups": [
+          {
+            "group": "Lake SDK",
+            "pages": [
+              "orbitra-lake-client",
+              {
+                "group": "models",
+                "pages": [
+                  "orbitra-lake-models-filter",
+                  "orbitra-lake-models-input_table_parser",
+                  "orbitra-lake-models-lake_error",
+                  "orbitra-lake-models-overwrite_table_data_response",
+                  "orbitra-lake-models-table_schema"
+                ]
+              }
+            ]
+          }
+        ],
+        "tab": "Lake SDK (v0.5.3)"
+      }
+    ]
+  },
+  "theme": "mint"
+}

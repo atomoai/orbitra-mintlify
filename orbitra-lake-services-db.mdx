@@ -1,0 +1,335 @@
+---
+title: db
+sidebarTitle: db
+---
+
+# `orbitra.lake.services.db`
+
+## Classes
+
+### `DBService`
+
+
+Service class for managing database operations.
+
+This class handles input validation, data conversion, and interaction with the BaseDB interface.
+
+**Attributes:**
+- `db`: An instance of a database interface that implements BaseDB.
+
+
+**Methods:**
+
+#### `add_column_to_table`
+
+```python
+add_column_to_table(self, namespace: str, table_name: str, column: str, column_type: AllowedColumnTypes) -> TableSchema
+```
+
+Add a new column to an existing table.
+
+**Args:**
+- `namespace`: The namespace where the table is located.
+- `table_name`: The name of the table to add the column to.
+- `column`: The name of the new column to add.
+- `column_type`: The data type of the new column.
+
+**Returns:**
+- The updated schema of the table after adding the new column.
+
+**Raises:**
+- `LakeError`: If the column is invalid, already exists or if the table does not exist.
+
+
+#### `close`
+
+```python
+close(self) -> None
+```
+
+Close any open database connections.
+
+#### `create_namespace`
+
+```python
+create_namespace(self, namespace: str) -> str
+```
+
+Create a new namespace in the database.
+
+**Args:**
+- `namespace`: The name of the namespace to create.
+
+**Returns:**
+- The name of the created namespace.
+
+**Raises:**
+- `LakeError`: If the namespace already exists.
+
+
+#### `create_or_update_table`
+
+```python
+create_or_update_table(self, namespace: str, table: TableSchema, allow_column_removal: bool = False, include_hash: bool = False) -> TableSchema
+```
+
+Create or update a table.
+
+This method will create the table if it does not exist, or update it if it does.
+Updates are only allowed in regular columns. Partition columns are not allowed to be updated.
+
+**Args:**
+- `namespace`: The namespace where the table is located.
+- `table`: The schema of the table to create or update.
+- `allow_column_removal`: Whether to allow column removal.
+- `include_hash`: Whether to include the __orbitra_hash__ column. Defaults to False.
+
+**Returns:**
+- The updated schema of the table after creating or updating it.
+
+**Raises:**
+- `LakeError`: If there are changes in partition columns or if a column is removed and allow_column_removal is False.
+
+
+#### `create_table`
+
+```python
+create_table(self, namespace: str, table: TableSchema, include_hash: bool = False) -> TableSchema
+```
+
+Create a new table in the specified namespace.
+
+**Args:**
+- `namespace`: The namespace where the table should be created.
+- `table`: The schema of the table to create.
+- `include_hash`: Whether to include the __orbitra_hash__ column. Defaults to False.
+
+**Returns:**
+- The schema of the created table.
+
+**Raises:**
+- `LakeError`: If the table already exists or if the namespace does not exist.
+
+
+#### `delete_data`
+
+```python
+delete_data(self, namespace: str, table_name: str, partition_filters: list[PartitionFilter]) -> str
+```
+
+Delete data from a table based on partition filters.
+
+This method deletes data from a table based on the provided partition filters.
+Partition filters are combined with an AND operation.
+If the table has no partition columns, it deletes the entire table data.
+
+**Args:**
+- `namespace`: The namespace where the table is located.
+- `table_name`: The name of the table to delete data from.
+- `partition_filters`: A list of partition filters to apply for the delete operation.
+Must be empty if the table has no partition columns.
+
+**Returns:**
+- An operation ID for tracking the delete operation.
+
+**Raises:**
+- `LakeError`: If the table does not exist or if the partition filters are invalid.
+
+
+#### `get_table_data`
+
+```python
+get_table_data(self, namespace: str, table_name: str, scan_filters: list[Filter], limit: Optional[int] = None) -> pd.DataFrame
+```
+
+Retrieve data from a table based on scan filters.
+
+This method retrieves data from a table based on the provided scan filters.
+Scan filters are combined with an AND operation.
+If an empty list of scan filters is provided, it retrieves all data from the table.
+
+**Args:**
+- `namespace`: The namespace where the table is located.
+- `table_name`: The name of the table to retrieve data from.
+- `scan_filters`: A list of column filters to apply for the query.
+- `limit`: The maximum number of rows to retrieve, defaults to None for all rows.
+
+**Returns:**
+- pd.DataFrame: A DataFrame containing the data retrieved from the table.
+
+**Raises:**
+- `LakeError`: If the table does not exist or if the scan filters are invalid.
+
+
+#### `get_table_metadata`
+
+```python
+get_table_metadata(self, namespace: str, table_name: str) -> TableSchema
+```
+
+Retrieve the metadata of a table.
+
+**Args:**
+- `namespace`: The namespace where the table is located.
+- `table_name`: The name of the table to retrieve metadata for.
+
+**Returns:**
+- The schema of the table if it exists.
+
+**Raises:**
+- `LakeError`: If the table does not exist.
+
+
+#### `list_namespaces`
+
+```python
+list_namespaces(self) -> list[str]
+```
+
+List all namespaces in the database.
+
+**Returns:**
+- list\[str]: A list of namespace names.
+
+
+#### `list_tables`
+
+```python
+list_tables(self, namespace: str) -> list[str]
+```
+
+List all tables in the specified namespace.
+
+**Args:**
+- `namespace`: The namespace to list tables from.
+
+**Returns:**
+- list\[str]: A list of table names in the specified namespace.
+
+**Raises:**
+- `LakeError`: If the namespace does not exist.
+
+
+#### `overwrite_data`
+
+```python
+overwrite_data(self, namespace: str, table_name: str, df: pd.DataFrame, check_hash: bool = False) -> OverwriteTableDataResponse
+```
+
+Overwrite partitions data in a table.
+
+This method overwrites the data in a table based on the partition columns present in the DataFrame.
+If the table has no partition columns, it overwrites the entire table data.
+
+**Args:**
+- `namespace`: The namespace where the table is located.
+- `table_name`: The name of the table to overwrite data in.
+- `df`: The DataFrame containing the data to overwrite in the table.
+- `check_hash`: If True, uses hash-based change detection to only overwrite data
+when hashes differ. Requires the table to have a hash column. Defaults to False.
+
+**Returns:**
+- A response object containing information about the modified partitions and inserted rows.
+
+**Raises:**
+- `LakeError`: If the table does not exist, if the DataFrame contains invalid data,
+or if check_hash is True and the table has no hash column.
+
+
+#### `overwrite_data_by_custom_columns`
+
+```python
+overwrite_data_by_custom_columns(self, namespace: str, table_name: str, custom_columns: list[str], df: pd.DataFrame) -> OverwriteDataByCustomColumnsResponse
+```
+
+Overwrite data into a table by custom columns.
+
+This method overwrites data into a table based on the provided custom columns and data.
+It will delete data based on the values in the custom columns and then insert the given data frame.
+
+**Args:**
+- `namespace`: The namespace where the table is located.
+- `table_name`: The name of the table to overwrite data into.
+- `custom_columns`: A list of columns to use as custom columns.
+- `df`: The DataFrame containing the data to overwrite.
+
+**Returns:**
+- A response object containing information about the modified custom values and inserted rows.
+
+**Raises:**
+- `LakeError`: If the table does not exist or if the custom columns are invalid.
+
+
+#### `refresh_token`
+
+```python
+refresh_token(self, token: str) -> None
+```
+
+Refresh the authentication token for the database.
+
+**Args:**
+- `token`: The new authentication token to set.
+
+
+#### `remove_column_from_table`
+
+```python
+remove_column_from_table(self, namespace: str, table_name: str, column: str) -> TableSchema
+```
+
+Remove a column from an existing table.
+
+**Args:**
+- `namespace`: The namespace where the table is located.
+- `table_name`: The name of the table to remove the column from.
+- `column`: The name of the column to remove.
+
+**Returns:**
+- The updated schema of the table after removing the column.
+
+**Raises:**
+- `LakeError`: If the table or column does not exist or if it is a reserved column.
+
+
+#### `run_query`
+
+```python
+run_query(self, namespace: str, query: str, engine: Literal['local', 'remote'] = 'local') -> pd.DataFrame
+```
+
+Run a query using the selected environment as query engine.
+
+**Args:**
+- `namespace`: The namespace to run the query in.
+- `query`: The query to run.
+- `engine`: The engine to use for the query.
+
+**Returns:**
+- pd.DataFrame: A DataFrame containing the retrieved data.
+
+**Raises:**
+- `LakeError`: If the query is invalid or if the engine is not supported.
+
+
+#### `update_column_type`
+
+```python
+update_column_type(self, namespace: str, table_name: str, column: str, column_type: AllowedColumnTypes) -> TableSchema
+```
+
+Update the type of a column in an existing table.
+
+**Args:**
+- `namespace`: The namespace where the table is located.
+- `table_name`: The name of the table to update the column type in.
+- `column`: The name of the column to update the type of.
+- `column_type`: The new type of the column.
+
+**Returns:**
+- The updated schema of the table after updating the column type.
+
+**Raises:**
+- `LakeError`: If the table or column does not exist or if it is a reserved column.
+
+
