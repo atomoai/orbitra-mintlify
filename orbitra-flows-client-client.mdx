@@ -1,0 +1,59 @@
+---
+title: client
+sidebarTitle: client
+---
+
+# `orbitra.flows.client.client`
+
+## Functions
+
+### `get_flows_client`
+
+```python
+get_flows_client(environment: str = 'prod') -> OrbitraFlowsClient
+```
+
+
+Get an authenticated OrbitraFlowsClient for the Orbitra Flows (Prefect) API.
+
+**Args:**
+- `environment`: The environment to get the API URL from. Defaults to "prod".
+
+**Returns:**
+- An authenticated OrbitraFlowsClient instance.
+
+
+## Classes
+
+### `OrbitraFlowsClient`
+
+
+A wrapper around SyncPrefectClient for interacting with Orbitra Flows.
+
+
+**Methods:**
+
+#### `api_url`
+
+```python
+api_url(self) -> str
+```
+
+Get the API URL of the Orbitra Flows server.
+
+
+#### `run_deployment_by_name`
+
+```python
+run_deployment_by_name(self, deployment_name: str, parameters: Optional[dict] = None) -> str
+```
+
+Run a Prefect deployment by name.
+
+**Args:**
+- `deployment_name`: The name of the deployment to run in the format &lt;FLOW_NAME&gt;/&lt;DEPLOYMENT_NAME&gt;.
+- `parameters`: Parameters to pass to the flow run. Defaults to None.
+
+**Returns:**
+- The ID of the created flow run.
+

@@ -1,0 +1,102 @@
+---
+title: email_func
+sidebarTitle: email_func
+---
+
+# `orbitra.commons.email_func`
+
+## Functions
+
+### `send_email`
+
+```python
+send_email(subject: str, body: str, to: list[str], cc: Optional[list[str]] = None, bcc: Optional[list[str]] = None, attachments: Optional[dict[str, bytes]] = None, body_format: Literal['html', 'text'] = 'html', reply_to: Optional[list[str]] = None) -> None
+```
+
+
+Send an email via Microsoft Graph API.
+
+**Args:**
+- `subject`: The subject of the email.
+- `body`: The body of the email.
+- `to`: The list of recipients.
+- `cc`: The list of CC recipients. Defaults to None.
+- `bcc`: The list of BCC recipients. Defaults to None.
+- `attachments`: The list of attachments. Each attachment is a dict with
+'filename' and 'content' keys. Defaults to None.
+- `body_format`: The format of the email body. Defaults to "html".
+- `reply_to`: The list of reply-to addresses. Defaults to None.
+
+**Raises:**
+- `Exception`: If email sending fails.
+
+**Examples:**
+
+Example usage:
+```python
+from orbitra.commons import email_func
+send_email(
+    subject="Test",
+    body="Hello",
+    to=["user@example.com"]
+)
+```
+
+Example with csv attachment:
+```python
+from orbitra.commons import email_func
+import pandas as pd
+import io
+df = pd.DataFrame({
+'Nome': ['Arthur', 'Beatriz', 'Carlos'],
+'Idade': [28, 34, 23],
+'Cidade': ['Sao Paulo', 'Rio de Janeiro', 'Belo Horizonte']
+})
+buffer = io.BytesIO()
+df.to_csv(buffer, index=False)
+subject = "Teste de Envio de Email"
+body = "Este é um email de teste com anexo."
+to_emails = ["youremail@teste.com"]
+attachments = {'dados_teste.csv': buffer.getvalue()}
+email_func.send_email(subject, body, to_emails, body_format='text', attachments=attachments)
+```
+
+Example with multiple attachments:
+```python
+from orbitra.commons import email_func
+import io
+subject = "Teste de Envio de Email com Múltiplos Anexos"
+body = "Este é um email de teste enviado a partir do módulo email_test.py com múltiplos anexos."
+to_emails = ["youremail@teste.com"]
+buffer = io.BytesIO()
+example_pandas_dataframe.to_csv(buffer, index=False)
+
+with open("/path_to_image/image.png", "rb") as image_file:
+    image_bytes = image_file.read()
+
+attachments = {
+    'dados_teste.csv': buffer.getvalue(),
+    'imagem_teste.png': image_bytes
+}
+email_func.send_email(subject, body, to_emails, body_format='text', attachments=attachments)
+```
+
+Example with inline image:
+```python
+from orbitra.commons import email_func
+import base64
+subject = "Teste de Envio de Email com Imagem"
+image_path = "/path_to_your_image/image.png"
+to_emails = ["youremail@teste.com"]
+
+with open(image_path, "rb") as image_file:
+    image_bytes = image_file.read()
+
+image_b64 = base64.b64encode(image_bytes).decode("utf-8")
+body = (
+    "&lt;h1&gt;Este é um email de teste com imagem enviado a partir do módulo email_test.py.&lt;/h1&gt;"
+    f"&lt;img src='data:image/png;base64,{image_b64}' alt='Imagem de Teste'/&gt;"
+)
+
+email_func.send_email(subject, body, to_emails, body_format="html")
+

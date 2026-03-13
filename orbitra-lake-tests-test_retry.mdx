@@ -1,0 +1,70 @@
+---
+title: test_retry
+sidebarTitle: test_retry
+---
+
+# `orbitra.lake.tests.test_retry`
+
+## Classes
+
+### `TestRetryDecorator`
+
+
+Test cases for the retry decorator function.
+
+
+**Methods:**
+
+#### `test_function_fails_all_retries`
+
+```python
+test_function_fails_all_retries(self)
+```
+
+Test that a function fails after all retry attempts.
+
+
+#### `test_function_succeeds_after_retries`
+
+```python
+test_function_succeeds_after_retries(self)
+```
+
+Test that a function succeeds after some retries.
+
+
+#### `test_retry_preserves_function_metadata`
+
+```python
+test_retry_preserves_function_metadata(self)
+```
+
+Test that the wraps decorator preserves function metadata.
+
+#### `test_retry_timing_and_backoff`
+
+```python
+test_retry_timing_and_backoff(self)
+```
+
+Test that retry delays increase with backoff factor.
+
+
+#### `test_retry_with_specific_exception`
+
+```python
+test_retry_with_specific_exception(self)
+```
+
+Test that retry only catches specified exception types.
+
+
+#### `test_successful_function_no_retry`
+
+```python
+test_successful_function_no_retry(self)
+```
+
+Test that a successful function doesn't retry.
+
+

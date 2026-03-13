@@ -1,0 +1,114 @@
+---
+title: saved_query
+sidebarTitle: saved_query
+---
+
+# `orbitra.lake.services.saved_query`
+
+## Classes
+
+### `SavedQueryService`
+
+
+Service class for managing saved query operations.
+
+**Attributes:**
+- `raw_service`: The raw service for saved query operations.
+- `db_service`: The database service for saved query operations.
+
+
+**Methods:**
+
+#### `create_or_update_saved_query`
+
+```python
+create_or_update_saved_query(self, namespace: str, saved_query: SavedQueryCreate) -> SavedQuerySchema
+```
+
+Create a new saved query or update an existing one, saving the old version to history.
+
+
+#### `create_saved_query`
+
+```python
+create_saved_query(self, namespace: str, saved_query: SavedQueryCreate) -> SavedQuerySchema
+```
+
+Create a new saved query. Validates SQL and raises LakeError if it already exists.
+
+
+#### `delete_saved_query`
+
+```python
+delete_saved_query(self, namespace: str, saved_query_name: str) -> None
+```
+
+Delete a saved query's current definition, preserving its version history.
+
+
+#### `get_saved_query`
+
+```python
+get_saved_query(self, namespace: str, saved_query_name: str, version: Optional[datetime] = None) -> SavedQuerySchema
+```
+
+Retrieve a saved query by name, optionally at a specific historical version.
+
+
+#### `get_saved_query_data`
+
+```python
+get_saved_query_data(self, namespace: str, saved_query_name: str, scan_filters: List[Filter], limit: Optional[int] = None, engine: Literal['local', 'remote'] = 'local') -> pd.DataFrame
+```
+
+Execute a saved query's SQL and return the results.
+
+Wraps the saved query SQL in a subquery and applies filters/limit on top.
+
+**Args:**
+- `namespace`: The namespace containing the saved query.
+- `saved_query_name`: The name of the saved query to execute.
+- `scan_filters`: Filters to apply on top of the result.
+- `limit`: Maximum number of rows to return.
+- `engine`: Query engine to use. Defaults to "local".
+
+**Returns:**
+- pd.DataFrame: The query result as a DataFrame.
+
+**Raises:**
+- `LakeError`: If the saved query does not exist or if query execution fails.
+
+#### `list_saved_queries`
+
+```python
+list_saved_queries(self, namespace: str) -> List[str]
+```
+
+List all saved query names in the specified namespace.
+
+
+#### `list_saved_query_history`
+
+```python
+list_saved_query_history(self, namespace: str, saved_query_name: str, include_deleted: bool = False) -> List[datetime]
+```
+
+List historical version timestamps for a saved query, sorted chronologically.
+
+
+#### `object_exists`
+
+```python
+object_exists(self, namespace: str, name: str) -> bool
+```
+
+Check if a name is already taken by a table or saved query.
+
+**Args:**
+- `namespace`: The namespace to check.
+- `name`: The name to verify.
+
+**Returns:**
+- True if a table or saved query with the given name already exists.
+
+

@@ -1,0 +1,42 @@
+---
+title: input_table_parser
+sidebarTitle: input_table_parser
+---
+
+# `orbitra.lake.models.input_table_parser`
+
+## Functions
+
+### `convert_api_input_to_df`
+
+```python
+convert_api_input_to_df(data: Union[List[Dict], Dict], format: DataFormat) -> pd.DataFrame
+```
+
+
+Convert API input data to a pandas DataFrame.
+
+**Args:**
+- `data`: The input data to convert.
+- `format`: The format of the input data, either "records" or "list".
+
+**Returns:**
+- pd.DataFrame: A DataFrame containing the input data.
+
+
+### `parse_df_to_table_format`
+
+```python
+parse_df_to_table_format(metadata: TableSchema, df: pd.DataFrame) -> pd.DataFrame
+```
+
+
+Convert input data to a pandas DataFrame with additional attributes and validations.
+
+**Args:**
+- `metadata`: The schema of the table to validate against.
+- `df`: The input DataFrame to convert, which must include schema columns.
+
+**Returns:**
+- pd.DataFrame: A DataFrame containing the input data, with additional attributes and validations applied.
+
