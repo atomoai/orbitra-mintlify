@@ -1,0 +1,118 @@
+---
+title: client
+sidebarTitle: client
+---
+
+# `orbitra.flows.client`
+
+## Functions
+
+### `get_flows_client`
+
+```python
+get_flows_client(environment: str = 'prod') -> OrbitraFlowsClient
+```
+
+
+Get an authenticated OrbitraFlowsClient for the Orbitra Flows (Prefect) API.
+
+**Args:**
+- `environment`: The environment to get the API URL from. Defaults to "prod".
+
+**Returns:**
+- An authenticated OrbitraFlowsClient instance.
+
+**Examples:**
+
+```python
+from orbitra.flows.client import get_flows_client
+
+client = get_flows_client()
+```
+
+
+## Classes
+
+### `OrbitraFlowsClient`
+
+
+A wrapper around SyncPrefectClient for interacting with Orbitra Flows.
+
+
+**Methods:**
+
+#### `api_url`
+
+```python
+api_url(self) -> str
+```
+
+Get the API URL of the Orbitra Flows server.
+
+
+#### `run_deployment_by_name`
+
+```python
+run_deployment_by_name(self, deployment_name: str, parameters: Optional[dict] = None) -> str
+```
+
+Run a Prefect deployment by name.
+
+**Args:**
+- `deployment_name`: The name of the deployment to run in the format &lt;FLOW_NAME&gt;/&lt;DEPLOYMENT_NAME&gt;.
+- `parameters`: Parameters to pass to the flow run. Defaults to None.
+
+**Returns:**
+- The ID of the created flow run.
+
+**Examples:**
+
+```python
+from orbitra.flows.client import get_flows_client
+
+client = get_flows_client()
+flow_run_id = client.run_deployment_by_name("my-flow/my-deployment", parameters={"key": "value"})
+```
+
+
+#### `sync_prefect_client`
+
+```python
+sync_prefect_client(self) -> SyncPrefectClient
+```
+
+The underlying
+[SyncPrefectClient](https://docs.prefect.io/v3/api-ref/python/prefect-client-orchestration-__init__#syncprefectclient)
+instance for direct Prefect API access.
+
+
+#### `wait_for_flow_run`
+
+```python
+wait_for_flow_run(self, flow_run_id: str | UUID, poll_interval: float = 5.0, timeout: Optional[float] = None, raise_on_flow_failure: bool = True) -> FlowRun
+```
+
+Poll a flow run until it reaches a terminal state.
+
+**Args:**
+- `flow_run_id`: The ID of the flow run to wait for.
+- `poll_interval`: Seconds between polling attempts. Defaults to 5.0.
+- `timeout`: Maximum seconds to wait before raising an error. Defaults to None (wait forever).
+- `raise_on_flow_failure`: If True, raise FlowsError on flow failure. If False, return the FlowRun instead. Defaults to True.
+
+**Returns:**
+- The completed flow run object.
+
+**Raises:**
+- `FlowsError`: If the flow run fails, crashes, or is cancelled (only when raise_on_flow_failure=True).
+
+**Examples:**
+
+```python
+from orbitra.flows.client import get_flows_client
+
+client = get_flows_client()
+flow_run_id = client.run_deployment_by_name("my-flow/my-deployment")
+flow_run = client.wait_for_flow_run(flow_run_id, timeout=300)
+```
+

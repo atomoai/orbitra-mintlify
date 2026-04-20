@@ -1,0 +1,200 @@
+---
+title: client
+sidebarTitle: client
+---
+
+# `orbitra.commons.email.client`
+
+## Functions
+
+### `get_email_client`
+
+```python
+get_email_client(environment: str = 'prod', credential: Optional[TokenCredential] = None, email_address: Optional[str] = None) -> OrbitraEmailClient
+```
+
+
+Get the OrbitraEmailClient instance.
+
+**Args:**
+- `environment`: Environment to use ("prod" or "dev"). Defaults to "prod".
+- `credential`: Synchronous Azure credential for API operations.
+- `email_address`: Optional email address to use for app-only auth URL resolution.
+
+**Returns:**
+- An instance of the OrbitraEmailClient class.
+
+
+## Classes
+
+### `OrbitraEmailClient`
+
+
+OrbitraEmailClient for interacting with email functionality using Microsoft Graph API.
+
+
+**Methods:**
+
+#### `get_email`
+
+```python
+get_email(self, email_id: str, include_attachments: bool = True) -> EmailDetail
+```
+
+Get detailed information about a specific email by its ID.
+
+**Args:**
+- `email_id`: The ID of the email to retrieve.
+- `include_attachments`: Whether to include attachment details in the response. Defaults to True.
+
+**Returns:**
+- An object containing detailed information about the email.
+See :class:`orbitra.commons.email.models.EmailDetail`.
+
+**Raises:**
+- `Exception`: If retrieving the email fails or attachments fails.
+
+
+#### `list_emails`
+
+```python
+list_emails(self, folder: str = 'inbox', top: int = 25, state: Optional[STATE] = None, is_read: Optional[bool] = None, received_after: Optional[datetime] = None, received_before: Optional[datetime] = None, subject_contains: Optional[str] = None, from_contains: Optional[str] = None) -> list[EmailDetail]
+```
+
+List emails in the specified folder with optional filtering.
+
+**Args:**
+- `folder`: The email folder to list emails from (e.g., "inbox", "sentitems", "junkemail"). Defaults to "inbox".
+- `top`: The maximum number of emails to return. Defaults to 25.
+- `state`: Filter emails by their state. Defaults to None.
+- `is_read`: Filter emails by read/unread status. Defaults to None.
+- `received_after`: Filter emails received after this date/time (ISO 8601 format). Defaults to None.
+- `received_before`: Filter emails received before this date/time (ISO 8601 format). Defaults to None.
+- `subject_contains`: Filter emails where the subject contains this string. Defaults to None.
+- `from_contains`: Filter emails where the sender's email address contains this string. Defaults to None.
+
+**Returns:**
+- list\[EmailDetail]: A list of email details matching the specified criteria.
+See :class:`orbitra.commons.email.models.EmailDetail`.
+
+**Raises:**
+- `Exception`: If listing emails fails.
+
+#### `send_email`
+
+```python
+send_email(self, subject: str, body: str, to: list[str], cc: Optional[list[str]] = None, bcc: Optional[list[str]] = None, attachments: Optional[dict[str, bytes]] = None, body_format: Literal['html', 'text'] = 'html', reply_to: Optional[list[str]] = None) -> None
+```
+
+Send an email via Microsoft Graph API.
+
+**Args:**
+- `subject`: The subject of the email.
+- `body`: The body of the email.
+- `to`: The list of recipients.
+- `cc`: The list of CC recipients. Defaults to None.
+- `bcc`: The list of BCC recipients. Defaults to None.
+- `attachments`: The list of attachments. Each attachment is a dict with
+'filename' and 'content' keys. Defaults to None.
+- `body_format`: The format of the email body. Defaults to "html".
+- `reply_to`: The list of reply-to addresses. Defaults to None.
+
+**Raises:**
+- `Exception`: If email sending fails.
+
+**Examples:**
+
+Example usage:
+```python
+from orbitra.commons.email import get_email_client
+
+email_client = get_email_client()
+email_client.send_email(
+    subject="Test",
+    body="Hello",
+    to=["user@example.com"]
+)
+```
+
+Example with csv attachment:
+```python
+from orbitra.commons.email import get_email_client
+import pandas as pd
+import io
+
+email_client = get_email_client()
+df = pd.DataFrame({
+'Nome': ['Arthur', 'Beatriz', 'Carlos'],
+'Idade': [28, 34, 23],
+'Cidade': ['Sao Paulo', 'Rio de Janeiro', 'Belo Horizonte']
+})
+buffer = io.BytesIO()
+df.to_csv(buffer, index=False)
+subject = "Teste de Envio de Email"
+body = "Este é um email de teste com anexo."
+to_emails = ["youremail@teste.com"]
+attachments = {'dados_teste.csv': buffer.getvalue()}
+email_client.send_email(subject, body, to_emails, body_format='text', attachments=attachments)
+```
+
+Example with multiple attachments:
+```python
+from orbitra.commons.email import get_email_client
+
+email_client = get_email_client()
+import io
+subject = "Teste de Envio de Email com Múltiplos Anexos"
+body = "Este é um email de teste enviado a partir do módulo email_test.py com múltiplos anexos."
+to_emails = ["youremail@teste.com"]
+buffer = io.BytesIO()
+example_pandas_dataframe.to_csv(buffer, index=False)
+
+with open("/path_to_image/image.png", "rb") as image_file:
+    image_bytes = image_file.read()
+
+attachments = {
+    'dados_teste.csv': buffer.getvalue(),
+    'imagem_teste.png': image_bytes
+}
+email_client.send_email(subject, body, to_emails, body_format='text', attachments=attachments)
+```
+
+Example with inline image:
+```python
+from orbitra.commons.email import get_email_client
+import base64
+
+email_client = get_email_client()
+subject = "Teste de Envio de Email com Imagem"
+image_path = "/path_to_your_image/image.png"
+to_emails = ["youremail@teste.com"]
+
+with open(image_path, "rb") as image_file:
+    image_bytes = image_file.read()
+
+image_b64 = base64.b64encode(image_bytes).decode("utf-8")
+body = (
+    "<h1>Este é um email de teste com imagem enviado a partir do módulo email_test.py.</h1>"
+    f"<img src='data:image/png;base64,{image_b64}' alt='Imagem de Teste'/>"
+)
+
+email_client.send_email(subject, body, to_emails, body_format="html")
+```
+
+
+#### `set_email_processing_state`
+
+```python
+set_email_processing_state(self, email_id: str, state: STATE) -> None
+```
+
+Set the state of an email by updating its categories.
+
+**Args:**
+- `email_id`: The ID of the email to update.
+- `state`: The state to set for the email.
+
+**Raises:**
+- `Exception`: If updating the email state fails.
+
+

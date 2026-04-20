@@ -1,0 +1,415 @@
+---
+title: test_saved_queries
+sidebarTitle: test_saved_queries
+---
+
+# `orbitra.lake.tests.lake.test_saved_queries`
+
+## Functions
+
+### `setup_test_table`
+
+```python
+setup_test_table(request)
+```
+
+
+Create a test table with sample data for query tests.
+
+
+## Classes
+
+### `TestSavedQueries`
+
+
+Test suite for the saved queries feature.
+
+Tests are organized in sections: CRUD, SQL validation, versioning, query, and metadata.
+A shared table 'test_data' is created in setup for query tests.
+
+
+**Methods:**
+
+#### `test_can_create_saved_query_after_table_deletion`
+
+```python
+test_can_create_saved_query_after_table_deletion(self)
+```
+
+Test that a saved query can be created after the conflicting table is deleted.
+
+This verifies that conflict checking doesn't prevent creating a saved query once
+the conflicting table no longer exists.
+
+#### `test_create_duplicate_saved_query`
+
+```python
+test_create_duplicate_saved_query(self)
+```
+
+Test that creating a saved query with an existing name raises an error.
+
+
+#### `test_create_or_update_saved_query_existing`
+
+```python
+test_create_or_update_saved_query_existing(self)
+```
+
+Test create_or_update updates an existing saved query's SQL.
+
+
+#### `test_create_or_update_saved_query_invalid_sql_syntax`
+
+```python
+test_create_or_update_saved_query_invalid_sql_syntax(self)
+```
+
+Test that create_or_update with invalid SQL syntax raises an error.
+
+
+#### `test_create_or_update_saved_query_new`
+
+```python
+test_create_or_update_saved_query_new(self)
+```
+
+Test create_or_update creates a new saved query if it doesn't exist.
+
+
+#### `test_create_or_update_saved_query_rejects_ddl`
+
+```python
+test_create_or_update_saved_query_rejects_ddl(self)
+```
+
+Test that create_or_update_saved_query also rejects DDL statements.
+
+
+#### `test_create_or_update_saved_query_sql_references_non_existent_table`
+
+```python
+test_create_or_update_saved_query_sql_references_non_existent_table(self)
+```
+
+Test that create_or_update referencing a non-existent table raises an error.
+
+
+#### `test_create_or_update_saved_query_with_same_name_as_existing_table`
+
+```python
+test_create_or_update_saved_query_with_same_name_as_existing_table(self)
+```
+
+Test that create_or_update_saved_query also prevents naming conflicts with tables.
+
+
+#### `test_create_saved_query`
+
+```python
+test_create_saved_query(self)
+```
+
+Test creating a new saved query.
+
+
+#### `test_create_saved_query_invalid_name`
+
+```python
+test_create_saved_query_invalid_name(self)
+```
+
+Test that creating a saved query with an invalid name raises an error.
+
+
+#### `test_create_saved_query_invalid_sql_syntax`
+
+```python
+test_create_saved_query_invalid_sql_syntax(self)
+```
+
+Test that creating a saved query with invalid SQL syntax raises an error.
+
+
+#### `test_create_saved_query_rejects_alter_statement`
+
+```python
+test_create_saved_query_rejects_alter_statement(self)
+```
+
+Test that creating a saved query with ALTER statement raises an error.
+
+
+#### `test_create_saved_query_rejects_delete_statement`
+
+```python
+test_create_saved_query_rejects_delete_statement(self)
+```
+
+Test that creating a saved query with DELETE statement raises an error.
+
+
+#### `test_create_saved_query_rejects_drop_statement`
+
+```python
+test_create_saved_query_rejects_drop_statement(self)
+```
+
+Test that creating a saved query with DROP statement raises an error.
+
+
+#### `test_create_saved_query_rejects_insert_statement`
+
+```python
+test_create_saved_query_rejects_insert_statement(self)
+```
+
+Test that creating a saved query with INSERT statement raises an error.
+
+
+#### `test_create_saved_query_rejects_update_statement`
+
+```python
+test_create_saved_query_rejects_update_statement(self)
+```
+
+Test that creating a saved query with UPDATE statement raises an error.
+
+
+#### `test_create_saved_query_sql_references_multiple_non_existent_tables`
+
+```python
+test_create_saved_query_sql_references_multiple_non_existent_tables(self)
+```
+
+Test that the error message lists all missing tables, not just the first.
+
+
+#### `test_create_saved_query_sql_references_non_existent_table`
+
+```python
+test_create_saved_query_sql_references_non_existent_table(self)
+```
+
+Test that creating a saved query referencing a non-existent table raises an error.
+
+
+#### `test_create_saved_query_with_same_name_as_existing_table`
+
+```python
+test_create_saved_query_with_same_name_as_existing_table(self)
+```
+
+Test that creating a saved query with the same name as an existing table raises LakeError.
+
+
+#### `test_delete_saved_query`
+
+```python
+test_delete_saved_query(self)
+```
+
+Test deleting a saved query.
+
+
+#### `test_delete_saved_query_non_existent`
+
+```python
+test_delete_saved_query_non_existent(self)
+```
+
+Test that deleting a non-existent saved query raises an error.
+
+
+#### `test_delete_saved_query_preserves_history`
+
+```python
+test_delete_saved_query_preserves_history(self)
+```
+
+Test that deleting a saved query removes the current version but preserves existing history.
+
+
+#### `test_get_saved_query`
+
+```python
+test_get_saved_query(self)
+```
+
+Test retrieving a saved query's metadata.
+
+
+#### `test_get_saved_query_by_version`
+
+```python
+test_get_saved_query_by_version(self)
+```
+
+Test retrieving a specific historical version by datetime.
+
+
+#### `test_get_saved_query_by_version_never_existed`
+
+```python
+test_get_saved_query_by_version_never_existed(self)
+```
+
+Test that retrieving a version for a saved query that was never created raises 'does not exist'.
+
+
+#### `test_get_saved_query_by_version_non_existent`
+
+```python
+test_get_saved_query_by_version_non_existent(self)
+```
+
+Test that retrieving a non-existent version raises an error.
+
+
+#### `test_get_saved_query_data`
+
+```python
+test_get_saved_query_data(self, snapshot: Snapshot)
+```
+
+Test executing a saved query's SQL and getting results as DataFrame.
+
+
+#### `test_get_saved_query_data_invalid_sql`
+
+```python
+test_get_saved_query_data_invalid_sql(self)
+```
+
+Test that querying a saved query whose underlying table was deleted raises an error.
+
+Simulates a scenario where a saved query was created with valid SQL, but the referenced
+table was subsequently removed.
+
+
+#### `test_get_saved_query_data_with_limit`
+
+```python
+test_get_saved_query_data_with_limit(self, snapshot: Snapshot)
+```
+
+Test limiting the number of rows returned.
+
+
+#### `test_get_saved_query_data_with_scan_filters`
+
+```python
+test_get_saved_query_data_with_scan_filters(self, snapshot: Snapshot)
+```
+
+Test applying additional scan filters on top of the saved query's SQL.
+
+
+#### `test_get_saved_query_non_existent`
+
+```python
+test_get_saved_query_non_existent(self)
+```
+
+Test that getting a non-existent saved query raises an error.
+
+
+#### `test_list_saved_queries`
+
+```python
+test_list_saved_queries(self)
+```
+
+Test listing saved queries in a namespace.
+
+
+#### `test_list_saved_queries_empty`
+
+```python
+test_list_saved_queries_empty(self)
+```
+
+Test listing saved queries in a namespace with none returns an empty list.
+
+
+#### `test_list_saved_query_history`
+
+```python
+test_list_saved_query_history(self)
+```
+
+Test listing version history returns datetime list in chronological order.
+
+
+#### `test_list_saved_query_history_empty`
+
+```python
+test_list_saved_query_history_empty(self)
+```
+
+Test that a newly created saved query has initial version in history.
+
+
+#### `test_list_saved_query_history_include_deleted`
+
+```python
+test_list_saved_query_history_include_deleted(self)
+```
+
+Test that list_saved_query_history with include_deleted=True works on deleted saved queries.
+
+
+#### `test_list_saved_query_history_non_existent`
+
+```python
+test_list_saved_query_history_non_existent(self)
+```
+
+Test that listing history for a never-created saved query raises an error.
+
+
+#### `test_saved_query_stores_created_at`
+
+```python
+test_saved_query_stores_created_at(self)
+```
+
+Test that created_at is populated when a saved query is created.
+
+
+#### `test_saved_query_stores_updated_at`
+
+```python
+test_saved_query_stores_updated_at(self)
+```
+
+Test that updated_at changes after an update.
+
+
+#### `test_update_increments_version`
+
+```python
+test_update_increments_version(self)
+```
+
+Test that each update increments the version number.
+
+
+#### `test_update_saved_query_invalid_sql_rejects_and_preserves_original`
+
+```python
+test_update_saved_query_invalid_sql_rejects_and_preserves_original(self)
+```
+
+Test that an update with invalid SQL does not alter the existing saved query.
+
+
+#### `test_update_saves_history`
+
+```python
+test_update_saves_history(self)
+```
+
+Test that an update saves the previous version to history.
+
+

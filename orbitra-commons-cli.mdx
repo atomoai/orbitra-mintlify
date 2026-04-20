@@ -1,0 +1,126 @@
+---
+title: cli
+sidebarTitle: cli
+---
+
+# `orbitra.commons.cli`
+
+
+Orbitra CLI - command-line interface for authentication and account management.
+
+## Functions
+
+### `get_token`
+
+```python
+get_token() -> None
+```
+
+
+Obtain an access token for a given scope.
+
+**Args:**
+- `scope`: The Azure AD scope to request.
+- `env`: Target environment.
+
+
+### `login`
+
+```python
+login() -> None
+```
+
+
+Authenticate with the Orbitra platform via Azure AD.
+
+**Args:**
+- `use_device_code`: Use device code authentication flow.
+- `use_interactive_browser`: Use interactive browser authentication flow (default).
+- `env`: Target environment.
+
+
+### `logout`
+
+```python
+logout() -> None
+```
+
+
+Clear cached authentication credentials.
+
+**Args:**
+- `env`: Target environment. If not specified, clears all credentials.
+
+
+### `secrets_delete_cmd`
+
+```python
+secrets_delete_cmd() -> None
+```
+
+
+Delete a secret from a User Key Vault.
+
+**Args:**
+- `name`: The secret name.
+- `key_vault`: Vault name override; uses client setting if None.
+- `environment`: Target environment (default\: prod).
+
+### `secrets_list_cmd`
+
+```python
+secrets_list_cmd() -> None
+```
+
+
+List all secret names in a User Key Vault.
+
+**Args:**
+- `key_vault`: Vault name override; uses client setting if None.
+- `environment`: Target environment (default\: prod).
+
+
+### `secrets_set`
+
+```python
+secrets_set() -> None
+```
+
+
+Create or update a secret in a User Key Vault.
+
+**Args:**
+- `name`: The secret name.
+- `value`: The secret value.
+- `key_vault`: Vault name override; uses client setting if None.
+- `environment`: Target environment (default\: prod).
+
+
+### `secrets_show`
+
+```python
+secrets_show() -> None
+```
+
+
+Retrieve and print a secret value from a User Key Vault.
+
+**Args:**
+- `name`: The secret name.
+- `key_vault`: Vault name override; uses client setting if None.
+- `environment`: Target environment (default\: prod).
+
+
+### `show`
+
+```python
+show() -> None
+```
+
+
+Display authentication information.
+
+**Args:**
+- `env`: Target environment. If not specified, shows all environments.
+
+

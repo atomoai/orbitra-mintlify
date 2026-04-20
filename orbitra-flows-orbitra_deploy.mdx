@@ -1,0 +1,100 @@
+---
+title: orbitra_deploy
+sidebarTitle: orbitra_deploy
+---
+
+# `orbitra.flows.orbitra_deploy`
+
+## Functions
+
+### `get_registered_deployments`
+
+```python
+get_registered_deployments() -> list[OrbitraDeploymentMeta]
+```
+
+### `orbitra_deployment`
+
+```python
+orbitra_deployment(name: Optional[str] = None, description: Optional[str] = None, concurrency: Optional[int] = 1, schedules: Optional[List[str]] = None, enable_schedules_on_creation: bool = False, tags: Optional[List[str]] = None, flow_config: Callable[..., PrefectFlow] = prefect_flow(log_prints=True), schedules_timezone: Optional[str] = None, container_size: ContainerSizeType = None, collision_strategy: Optional[Literal['ENQUEUE', 'CANCEL_NEW']] = 'CANCEL_NEW') -> Callable[[Callable[..., Any]], PrefectFlow]
+```
+
+
+Decorator to register an Orbitra deployment.
+
+This decorator records metadata of a flow so it can later be deployed.
+It also automatically transforms the decorated function into a Prefect Flow
+(equivalent to ``@flow``).
+
+**Args:**
+- `name`: A friendly name for the deployment. Defaults to the function's
+name if not provided.
+- `description`: A free-form description of the deployment. Can be used to
+document the purpose, ownership, or context of the flow.
+- `concurrency`: Maximum number of concurrent runs allowed for this
+deployment. If omitted, no concurrency limit is enforced.
+- `schedules`: A list of schedule definitions attached to the deployment.
+Supported formats include
+    - `"cron={expr}"` for cron-based schedules.
+    - `"interval={seconds}"` for fixed interval schedules.
+    - Any valid RRULE string (RFC 5545) for advanced recurrence rules.
+- `enable_schedules_on_creation`: If `True`, schedules are created on
+active state for new deployments. Useful for defining schedules and
+enabling them by default.
+- `tags`: A list of tags to associate with the deployment. Tags can be
+used for organization, filtering, or triggering rules.
+- `flow_config`: A callable returned by `prefect.flow(...)`. The
+decorated function will be wrapped with it.
+- `schedules_timezone`: Timezone name to apply to all schedules for this
+deployment (e.g., `"America/Sao_Paulo"`). If omitted,
+`"America/Sao_Paulo"` will be used as the default timezone.
+- `container_size`: Defines the container
+resources to be used when generating the deployment infrastructure.
+Supported presets are `"XS"`(default), `"S"`, `"M"`, and `"L"`, which map to
+    * XS -> 1 GB memory / 1 CPU
+    * S  -> 2 GB memory / 1 CPU
+    * M  -> 4 GB memory / 2 CPUs
+    * L  -> 8 GB memory / 4 CPUs
+
+Pass `ContainerSize(memory_gb=..., cpu_cores=...)` to define bespoke resources.
+Both `memory_gb` and `cpu_cores` must be integers; floats are not accepted.
+Values must also stay within the Azure Container Apps limits (1-240 GB RAM,
+1-31 vCPU). If not defined, the default for the work pool will be used.
+- `collision_strategy`: Strategy to use when a new run is started
+while another is already running.
+
+**Examples:**
+
+```python
+from prefect import flow
+from orbitra.flows.orbitra_deploy import orbitra_deployment, ContainerSize
+
+@orbitra_deployment()
+def manual_flow():
+    ...
+
+@orbitra_deployment(
+    name="reporting-prod",
+    flow_config=flow(name="daily-reporting", log_prints=True),
+    schedules=["cron=0 7 * * *"],
+    tags=["prod", "finance"],
+    container_size="M",
+)
+def generate_reports(day: str = "yesterday"):
+    ...
+
+@orbitra_deployment(
+    flow_config=flow(name="etl-runner", retries=2, retry_delay_seconds=60),
+    schedules=["interval=3600"],
+    container_size=ContainerSize(memory_gb=16, cpu_cores=6),
+)
+def hourly_etl():
+    ...
+```
+
+
+## Classes
+
+### `ContainerSize`
+
+### `OrbitraDeploymentMeta`
