@@ -1,0 +1,217 @@
+---
+title: test_hashes
+sidebarTitle: test_hashes
+---
+
+# `orbitra.lake.tests.lake.test_hashes`
+
+## Functions
+
+### `create_namespace`
+
+```python
+create_namespace(request)
+```
+
+
+Fixture to create the namespace for the test class.
+
+
+## Classes
+
+### `TestHashes`
+
+
+Test suite for the hash methods.
+
+
+**Methods:**
+
+#### `test_get_table_hash_sum_returns_none_for_empty_table`
+
+```python
+test_get_table_hash_sum_returns_none_for_empty_table(self)
+```
+
+Test that get_table_hash_sum returns None when the table is empty.
+
+
+#### `test_get_table_hash_sum_returns_none_for_legacy_string_hash`
+
+```python
+test_get_table_hash_sum_returns_none_for_legacy_string_hash(self)
+```
+
+Test that get_table_hash_sum returns None when __orbitra_hash__ column is of type string (legacy).
+
+
+#### `test_get_table_hash_sum_returns_none_when_hash_column_missing`
+
+```python
+test_get_table_hash_sum_returns_none_when_hash_column_missing(self)
+```
+
+Test that get_table_hash_sum returns None when __orbitra_hash__ column doesn't exist.
+
+
+#### `test_get_table_hash_sum_returns_sum_of_hashes`
+
+```python
+test_get_table_hash_sum_returns_sum_of_hashes(self)
+```
+
+Test that get_table_hash_sum returns the sum of hash values when table has data.
+
+
+#### `test_get_table_partition_hash_sums_returns_hash_per_partition`
+
+```python
+test_get_table_partition_hash_sums_returns_hash_per_partition(self)
+```
+
+Test that get_table_partition_hash_sums returns the sum of hash values per partition.
+
+
+#### `test_get_table_partition_hash_sums_returns_none_for_empty_table`
+
+```python
+test_get_table_partition_hash_sums_returns_none_for_empty_table(self)
+```
+
+Test that get_table_partition_hash_sums returns None when the table is empty.
+
+
+#### `test_get_table_partition_hash_sums_returns_none_for_legacy_string_hash`
+
+```python
+test_get_table_partition_hash_sums_returns_none_for_legacy_string_hash(self)
+```
+
+Test that get_table_partition_hash_sums returns None when __orbitra_hash__ column is of type string (legacy).
+
+
+#### `test_get_table_partition_hash_sums_returns_none_when_hash_column_missing`
+
+```python
+test_get_table_partition_hash_sums_returns_none_when_hash_column_missing(self)
+```
+
+Test that get_table_partition_hash_sums returns None when __orbitra_hash__ column doesn't exist.
+
+
+#### `test_get_table_partition_hash_sums_with_filter`
+
+```python
+test_get_table_partition_hash_sums_with_filter(self)
+```
+
+Test that get_table_partition_hash_sums filters partitions correctly.
+
+
+#### `test_get_table_partition_hash_sums_with_no_filter_match`
+
+```python
+test_get_table_partition_hash_sums_with_no_filter_match(self)
+```
+
+Test that get_table_partition_hash_sums returns None when no filter matches partitions.
+
+
+#### `test_get_table_partition_hash_sums_with_one_filter_match`
+
+```python
+test_get_table_partition_hash_sums_with_one_filter_match(self)
+```
+
+Test that get_table_partition_hash_sums returns None when one filter matches partitions.
+
+
+#### `test_overwrite_data_check_hash_false_returns_all_partitions`
+
+```python
+test_overwrite_data_check_hash_false_returns_all_partitions(self, snapshot: Snapshot)
+```
+
+Test that overwrite_data with check_hash=False returns all partitions even when unchanged.
+
+
+#### `test_overwrite_data_check_hash_true_raises_when_no_hash_column`
+
+```python
+test_overwrite_data_check_hash_true_raises_when_no_hash_column(self)
+```
+
+Test that overwrite_data with check_hash=True raises LakeError when table has no hash column.
+
+#### `test_overwrite_data_check_hash_true_returns_only_changed_partitions`
+
+```python
+test_overwrite_data_check_hash_true_returns_only_changed_partitions(self, snapshot: Snapshot)
+```
+
+Test that overwrite_data with check_hash=True only returns changed partitions.
+
+
+#### `test_overwrite_data_skips_when_all_partitions_unchanged`
+
+```python
+test_overwrite_data_skips_when_all_partitions_unchanged(self, snapshot: Snapshot)
+```
+
+Test that overwrite_data skips when all partition hashes match.
+
+
+#### `test_overwrite_data_skips_when_hash_unchanged_non_partitioned`
+
+```python
+test_overwrite_data_skips_when_hash_unchanged_non_partitioned(self, snapshot: Snapshot)
+```
+
+Test that overwrite_data skips overwriting when data hash hasn't changed (non-partitioned table).
+
+
+#### `test_overwrite_data_updates_multiple_changed_partitions`
+
+```python
+test_overwrite_data_updates_multiple_changed_partitions(self, snapshot: Snapshot)
+```
+
+Test that overwrite_data updates multiple partitions when their hashes differ.
+
+
+#### `test_overwrite_data_updates_only_changed_partitions`
+
+```python
+test_overwrite_data_updates_only_changed_partitions(self, snapshot: Snapshot)
+```
+
+Test that overwrite_data only updates partitions where hashes differ.
+
+
+#### `test_overwrite_data_updates_when_hash_changed_non_partitioned`
+
+```python
+test_overwrite_data_updates_when_hash_changed_non_partitioned(self, snapshot: Snapshot)
+```
+
+Test that overwrite_data updates when data hash has changed (non-partitioned table).
+
+
+#### `test_overwrite_data_with_new_partition`
+
+```python
+test_overwrite_data_with_new_partition(self, snapshot: Snapshot)
+```
+
+Test that overwrite_data handles new partitions correctly.
+
+
+#### `test_overwrite_data_without_hash_column_always_updates`
+
+```python
+test_overwrite_data_without_hash_column_always_updates(self, snapshot: Snapshot)
+```
+
+Test that overwrite_data always updates when table has no hash column.
+
+

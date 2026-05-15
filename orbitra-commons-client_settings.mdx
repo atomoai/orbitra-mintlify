@@ -1,0 +1,106 @@
+---
+title: client_settings
+sidebarTitle: client_settings
+---
+
+# `orbitra.commons.client_settings`
+
+## Functions
+
+### `get_available_environments`
+
+```python
+get_available_environments() -> list[str]
+```
+
+
+Get the list of available environment names from the Orbitra settings source.
+
+**Returns:**
+- list\[str]: A sorted list of available environment names.
+
+
+### `get_client_settings`
+
+```python
+get_client_settings(environment: str = 'prod') -> ClientSettings
+```
+
+
+Get the client settings for the Orbitra application.
+
+**Returns:**
+- An instance of ClientSettings with the configured values.
+
+
+## Classes
+
+### `SDKSettingsSource`
+
+
+Loads settings from the Orbitra SDK settings plugin (remote URL or entry point).
+
+
+**Methods:**
+
+#### `get_field_value`
+
+```python
+get_field_value(self, field: FieldInfo, field_name: str) -> tuple[Any, str, bool]
+```
+
+Get the value of a field from the SDK settings.
+
+**Args:**
+- `field`: The field to get the value for.
+- `field_name`: The name of the field to get the value for.
+
+**Returns:**
+- tuple\[Any, str, bool]: The value of the field, the name of the field, and a boolean indicating if the field is required.
+
+
+### `ClientSettings`
+
+
+Client settings for the Orbitra application.
+
+This class is used to manage configuration settings for the client.
+
+
+**Methods:**
+
+#### `orbitra_authority`
+
+```python
+orbitra_authority(self) -> str
+```
+
+Return the authority domain for the application.
+
+
+#### `orbitra_client_id`
+
+```python
+orbitra_client_id(self) -> str
+```
+
+Return the client ID for the application.
+
+
+#### `orbitra_token_issuer`
+
+```python
+orbitra_token_issuer(self) -> list[str]
+```
+
+Return the token issuer domain for the application.
+
+#### `settings_customise_sources`
+
+```python
+settings_customise_sources(cls, settings_cls: type[BaseSettings], init_settings: PydanticBaseSettingsSource, env_settings: PydanticBaseSettingsSource, dotenv_settings: PydanticBaseSettingsSource, file_secret_settings: PydanticBaseSettingsSource) -> tuple[PydanticBaseSettingsSource, ...]
+```
+
+Customise the settings sources for the client settings.
+
+

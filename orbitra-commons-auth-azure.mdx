@@ -1,0 +1,43 @@
+---
+title: azure
+sidebarTitle: azure
+---
+
+# `orbitra.commons.auth.azure`
+
+## Functions
+
+### `get_azure_access_token`
+
+```python
+get_azure_access_token(scope: str, environment: str = 'prod') -> str
+```
+
+
+Get an access token for the given scope and environment.
+
+**Args:**
+- `scope`: The scope to get an access token for.
+- `environment`: The environment to get an access token for.
+
+**Returns:**
+- An access token for the given scope and environment.
+
+### `get_azure_credential`
+
+```python
+get_azure_credential(scope: str, environment: str = 'prod', use_device_code: Optional[bool] = None) -> TokenCredential
+```
+
+
+Get a credential for the given scope and environment.
+
+**Args:**
+- `scope`: The scope to get a credential for.
+- `environment`: The environment to get a credential for.
+- `use_device_code`: If True, use device code flow. If False, use interactive browser. If None, use env var.
+
+**Returns:**
+- A credential for the given scope and environment.
+
+

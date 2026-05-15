@@ -1,0 +1,157 @@
+---
+title: raw
+sidebarTitle: raw
+---
+
+# `orbitra.lake.services.raw`
+
+## Classes
+
+### `RawService`
+
+
+Service class for managing raw data persistence.
+
+This class provides a high-level API for persisting raw data into Orbitra Lake,
+delegating the actual storage logic to an implementation of the
+`BaseRawProvider` interface (e.g., local filesystem or Azure Blob Storage).
+
+**Attributes:**
+- `raw_provider`: An instance of a raw data provider
+that implements the `BaseRawProvider` interface.
+
+
+**Methods:**
+
+#### `get_processed_flag`
+
+```python
+get_processed_flag(self, full_filename: str, namespace: str) -> bool
+```
+
+Get the processed flag for a raw file.
+
+**Args:**
+- `full_filename`: The full path and filename of the raw file to get the processed flag for.
+- `namespace`: Namespace used to compose the container name.
+The effective container is
+`settings.orbitra_lake_raw_container_prefix + namespace`.
+
+**Returns:**
+- The processed flag value.
+
+#### `get_raw_file_system`
+
+```python
+get_raw_file_system(self, namespace: str) -> AbstractFileSystem
+```
+
+Get a filesystem interface for the raw storage.
+
+This method delegates to the underlying `BaseRawProvider` implementation
+to obtain a filesystem interface (e.g., AzureBlobFileSystem or LocalFileSystem)
+for direct file operations on the raw storage.
+
+**Args:**
+- `namespace`: Logical namespace used to compose container/directory name.
+
+**Returns:**
+- A filesystem interface for accessing raw storage.
+
+
+#### `read_raw_bytes_from_blob`
+
+```python
+read_raw_bytes_from_blob(self, full_filename: str, namespace: str) -> io.BytesIO
+```
+
+Read a raw bytes object from the specified blob storage location.
+
+**Args:**
+- `full_filename`: The full path and filename of the raw bytes object to read from the raw storage container.
+- `namespace`: Namespace used to compose the container name.
+The effective container is
+`settings.orbitra_lake_raw_container_prefix + namespace`.
+
+**Returns:**
+- io.BytesIO: The raw bytes object read from the blob storage.
+
+
+#### `read_raw_df_from_blob`
+
+```python
+read_raw_df_from_blob(self, full_filename: str, namespace: str) -> pd.DataFrame
+```
+
+Reads a raw Parquet file from the specified blob storage location and returns its contents as a pandas DataFrame.
+
+**Args:**
+- `full_filename`: The full path and filename of the Parquet file to read from the raw storage container.
+- `namespace`: Namespace used to compose the container name.
+The effective container is
+`settings.orbitra_lake_raw_container_prefix + namespace`.
+
+**Returns:**
+- pd.DataFrame: The contents of the Parquet file as a pandas DataFrame.
+
+
+#### `save_raw_bytes_to_blob`
+
+```python
+save_raw_bytes_to_blob(self, bytes_io: io.BytesIO, full_filename: str, namespace: str) -> bool
+```
+
+Save a bytes object as a raw blob in Azure Blob Storage.
+
+**Args:**
+- `bytes_io`: The bytes object to persist.
+- `full_filename`: The blob path, including virtual directories,
+e.g. `"finance/2025/09/transactions.parquet"`.
+- `namespace`: Namespace used to compose the container name.
+The effective container is
+`settings.orbitra_lake_raw_container_prefix + namespace`.
+
+**Returns:**
+- True if the bytes object was stored, False if it already exists and is the same.
+
+
+#### `save_raw_df_to_blob`
+
+```python
+save_raw_df_to_blob(self, df: pd.DataFrame, full_filename: str, namespace: str) -> bool
+```
+
+Save a DataFrame as a Parquet blob in Azure Blob Storage.
+
+The DataFrame is serialized to Parquet in memory and uploaded
+to the configured storage account and container. Existing blobs
+will be overwritten.
+
+**Args:**
+- `df`: The DataFrame to persist.
+- `full_filename`: The blob path, including virtual directories,
+e.g. `"finance/2025/09/transactions.parquet"`.
+- `namespace`: Namespace used to compose the container name.
+The effective container is
+`settings.orbitra_lake_raw_container_prefix + namespace`.
+
+**Returns:**
+- True if the DataFrame was stored, False if it already exists and is the same.
+
+
+#### `set_processed_flag`
+
+```python
+set_processed_flag(self, full_filename: str, namespace: str, is_processed: bool) -> None
+```
+
+Set the processed flag for a raw file.
+
+**Args:**
+- `full_filename`: The full path and filename of the raw file to set the processed flag for.
+- `namespace`: Namespace used to compose the container name.
+The effective container is
+`settings.orbitra_lake_raw_container_prefix + namespace`.
+- `is_processed`: The processed flag value to set.
+
+

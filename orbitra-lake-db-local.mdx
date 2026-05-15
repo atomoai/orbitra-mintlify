@@ -1,0 +1,63 @@
+---
+title: local
+sidebarTitle: local
+---
+
+# `orbitra.lake.db.local`
+
+## Classes
+
+### `LocalDB`
+
+
+Concrete implementation of PyIcebergDB for local SQLite catalog.
+
+
+**Methods:**
+
+#### `close`
+
+```python
+close(self) -> None
+```
+
+Close the SQLite catalog connection to release file locks.
+
+
+#### `get_sql_dialect`
+
+```python
+get_sql_dialect(self, engine: Literal['local', 'remote'] = 'local') -> str
+```
+
+#### `refresh_token`
+
+```python
+refresh_token(self, token: str) -> None
+```
+
+Refresh token, closing the old SQLite connection first to release file locks.
+
+
+#### `run_query`
+
+```python
+run_query(self, namespace: str, query: str, engine: Literal['local', 'remote'] = 'local') -> pd.DataFrame
+```
+
+Execute a SQL query against the local catalog using DuckDB.
+
+Loads referenced tables from the PyIceberg catalog into DuckDB and executes the query.
+Only supports the "local" engine.
+
+**Args:**
+- `namespace`: The namespace (schema) to query in.
+- `query`: The SQL query to execute.
+- `engine`: Query engine. Only "local" is supported.
+
+**Returns:**
+- pd.DataFrame: The query result as a DataFrame.
+
+**Raises:**
+- `LakeError`: If the query is invalid or execution fails.
+
