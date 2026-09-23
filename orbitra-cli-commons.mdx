@@ -1,0 +1,257 @@
+---
+title: commons
+sidebarTitle: commons
+---
+
+# `orbitra`
+
+Commands provided by the `orbitra-commons` package.
+
+## Commands
+
+### `orbitra account get-token`
+
+```bash
+orbitra account get-token [OPTIONS]
+```
+
+Obtain an access token for a given scope.
+
+**Options:**
+
+<div className="cli-table">
+
+| Flag | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| `--scope` | `str` | yes |  | The Azure AD scope to request. |
+| `--env` | `str` | no | `'prod'` | Target environment. |
+
+</div>
+
+**Examples:**
+
+```bash
+orbitra account get-token --scope <scope>
+```
+
+```bash
+orbitra account get-token --scope https://graph.microsoft.com/.default --env dev
+```
+
+### `orbitra account show`
+
+```bash
+orbitra account show [OPTIONS]
+```
+
+Display authentication information.
+
+**Options:**
+
+<div className="cli-table">
+
+| Flag | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| `--env` | `str` | no | `None` | Target environment. If not specified, shows all environments. |
+
+</div>
+
+**Examples:**
+
+```bash
+orbitra account show
+```
+
+```bash
+orbitra account show --env dev
+```
+
+### `orbitra email send`
+
+```bash
+orbitra email send [OPTIONS]
+```
+
+Send an email via Microsoft Graph.
+
+Provide the body inline with --body or from a file with --body-file (exactly one).
+Recipients and attachments accept repeated flags.
+
+**Options:**
+
+<div className="cli-table">
+
+| Flag | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| `--subject` | `str` | yes |  | The email subject. |
+| `--to` | `list` | yes |  | Recipient address(es); repeat --to for multiple. |
+| `--body` | `str` | no | `None` | Inline body text. Mutually exclusive with --body-file. |
+| `--body-file` | `str` | no | `None` | Path to a file whose contents become the body. Mutually exclusive with --body. |
+| `--cc` | `list` | no | `None` | CC address(es); repeat --cc for multiple. |
+| `--bcc` | `list` | no | `None` | BCC address(es); repeat --bcc for multiple. |
+| `--attach` | `list` | no | `None` | File path(s) to attach; repeat --attach for multiple. |
+| `--format` | `Literal` | no | `'html'` | Body format. |
+| `--reply-to` | `list` | no | `None` | Reply-to address(es); repeat --reply-to for multiple. |
+| `--env` | `str` | no | `'prod'` | Target environment. |
+
+</div>
+
+**Examples:**
+
+```bash
+orbitra email send --subject <subject> --to user@example.com
+```
+
+```bash
+orbitra email send --subject Hi --to a@x.com --to b@y.com --body "Hello" --attach report.csv
+```
+
+### `orbitra login`
+
+```bash
+orbitra login [OPTIONS]
+```
+
+Authenticate with the Orbitra platform via Azure AD.
+
+**Options:**
+
+<div className="cli-table">
+
+| Flag | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| `--use-device-code` | `bool` | no | `False` | Use the combined (blocking) device code authentication flow. |
+| `--use-interactive-browser` | `bool` | no | `False` | Use interactive browser authentication flow (default). |
+| `--start-device-code` | `bool` | no | `False` | Start a two-step device code login\: print the URL + code and return immediately without polling. Pair with --complete-device-code. Agent-friendly. |
+| `--complete-device-code` | `bool` | no | `False` | Finish a login started with --start-device-code by polling for the token. |
+| `--env` | `str` | no | `'prod'` | Target environment. |
+
+</div>
+
+**Examples:**
+
+```bash
+orbitra login
+```
+
+```bash
+orbitra login --use-device-code
+```
+
+### `orbitra logout`
+
+```bash
+orbitra logout [OPTIONS]
+```
+
+Clear cached authentication credentials.
+
+**Options:**
+
+<div className="cli-table">
+
+| Flag | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| `--env` | `str` | no | `None` | Target environment. If not specified, clears all credentials. |
+
+</div>
+
+**Examples:**
+
+```bash
+orbitra logout
+```
+
+```bash
+orbitra logout --env dev
+```
+
+### `orbitra secrets delete`
+
+```bash
+orbitra secrets delete [OPTIONS]
+```
+
+Delete a secret from a User Key Vault.
+
+**Options:**
+
+<div className="cli-table">
+
+| Flag | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| `--name` | `str` | yes |  | The secret name. |
+| `--key-vault` | `str` | no | `None` | Vault name override; uses client setting if None. |
+| `--environment` | `str` | no | `'prod'` | Target environment. |
+
+</div>
+
+**Examples:**
+
+```bash
+orbitra secrets delete --name <name>
+```
+
+```bash
+orbitra secrets delete --name db-password --key-vault my-key-vault
+```
+
+### `orbitra secrets list`
+
+```bash
+orbitra secrets list [OPTIONS]
+```
+
+List all secret names in a User Key Vault.
+
+**Options:**
+
+<div className="cli-table">
+
+| Flag | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| `--key-vault` | `str` | no | `None` | Vault name override; uses client setting if None. |
+| `--environment` | `str` | no | `'prod'` | Target environment. |
+
+</div>
+
+**Examples:**
+
+```bash
+orbitra secrets list
+```
+
+```bash
+orbitra secrets list --key-vault my-key-vault
+```
+
+### `orbitra secrets set`
+
+```bash
+orbitra secrets set [OPTIONS]
+```
+
+Create or update a secret in a User Key Vault.
+
+**Options:**
+
+<div className="cli-table">
+
+| Flag | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| `--name` | `str` | yes |  | The secret name. |
+| `--value` | `str` | yes |  | The secret value. |
+| `--key-vault` | `str` | no | `None` | Vault name override; uses client setting if None. |
+| `--environment` | `str` | no | `'prod'` | Target environment. |
+
+</div>
+
+**Examples:**
+
+```bash
+orbitra secrets set --name <name> --value <value>
+```
+
+```bash
+orbitra secrets set --name db-password --value s3cr3t-value --key-vault my-key-vault
+```

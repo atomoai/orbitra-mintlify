@@ -1,0 +1,49 @@
+---
+title: test_auto_commit
+sidebarTitle: test_auto_commit
+---
+
+# `orbitra.lake.tests.integration.test_auto_commit`
+
+## Classes
+
+### `TestAutoCommitIntegration`
+
+
+Pins Unity Catalog's one-snapshot-per-commit rule and the SDK's answers to it, end-to-end.
+
+Unity Catalog rejects transactions carrying more than one snapshot with `CommitFailedException:
+Adding multiple snapshots in a single update is not supported` — the reason
+`PyIcebergDB._set_transaction_auto_commit` exists. The overwrite paths no longer depend on the
+workaround: both `overwrite_partitions_data` (ORBITRA-835) and `overwrite_data_by_custom_columns`
+(ORBITRA-833) commit a single atomic overwrite snapshot.
+
+
+**Methods:**
+
+#### `test_overwrite_by_custom_columns_is_single_snapshot`
+
+```python
+test_overwrite_by_custom_columns_is_single_snapshot(self)
+```
+
+Custom-columns overwrite commits exactly one snapshot, even with the auto-commit workaround disabled.
+
+#### `test_overwrite_partitions_is_single_snapshot`
+
+```python
+test_overwrite_partitions_is_single_snapshot(self)
+```
+
+Partition overwrite commits exactly one snapshot, even with the auto-commit workaround disabled.
+
+
+#### `test_unity_rejects_multi_snapshot_transaction`
+
+```python
+test_unity_rejects_multi_snapshot_transaction(self)
+```
+
+The documented UC failure that motivates the auto-commit workaround, pinned with raw pyiceberg.
+
+

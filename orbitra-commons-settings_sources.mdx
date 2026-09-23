@@ -1,0 +1,40 @@
+---
+title: settings_sources
+sidebarTitle: settings_sources
+---
+
+# `orbitra.commons.settings_sources`
+
+
+Composition of local and published settings before secret resolution.
+
+## Functions
+
+### `decode_settings_values`
+
+```python
+decode_settings_values(settings_cls: type[BaseSettings], values: dict[str, Any]) -> dict[str, Any]
+```
+
+
+Decode literal complex fields, or resolved fields at final validation.
+
+
+## Classes
+
+### `OrbitraSettingsSource`
+
+
+Merge sources by priority; env may override extras configured in init, dotenv or TOML.
+
+
+**Methods:**
+
+#### `get_field_value`
+
+```python
+get_field_value(self, field: FieldInfo, field_name: str) -> tuple[Any, str, bool]
+```
+
+Supply values through the complete source call.
+

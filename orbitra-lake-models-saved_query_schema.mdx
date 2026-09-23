@@ -1,0 +1,46 @@
+---
+title: saved_query_schema
+sidebarTitle: saved_query_schema
+---
+
+# `orbitra.lake.models.saved_query_schema`
+
+## Classes
+
+### `SavedQueryCreate`
+
+
+Input model for creating or updating a saved query.
+
+Metadata fields (version, timestamps) are populated by the SDK/API, not by the caller.
+
+**Attributes:**
+- `name`: The name of the saved query. Must be a valid identifier (alphanumeric and underscores only).
+- `sql`: The SQL query that defines the saved query.
+- `description`: A human-readable description of the saved query.
+
+
+**Methods:**
+
+#### `validate_name`
+
+```python
+validate_name(self) -> Self
+```
+
+Validate that the saved query name is a valid identifier.
+
+
+### `SavedQuerySchema`
+
+
+Output model representing a persisted saved query with all metadata.
+
+**Attributes:**
+- `name`: The name of the saved query.
+- `sql`: The SQL query that defines the saved query.
+- `description`: A human-readable description of the saved query.
+- `version`: The version number, auto-incremented on each update.
+- `created_at`: Timestamp when the saved query was first created.
+- `updated_at`: Timestamp of the last update.
+

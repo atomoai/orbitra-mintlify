@@ -1,0 +1,577 @@
+---
+title: test_tables
+sidebarTitle: test_tables
+---
+
+# `orbitra.lake.tests.lake.test_tables`
+
+## Functions
+
+### `ensure_namespace`
+
+```python
+ensure_namespace(request)
+```
+
+
+Fixture to create the namespace for the test class.
+
+
+## Classes
+
+### `TestTables`
+
+
+Test suite for the client methods that alter catalog metadata.
+
+
+**Methods:**
+
+#### `test_add_and_remove_column`
+
+```python
+test_add_and_remove_column(self, table_name: str, snapshot: Snapshot)
+```
+
+Test adding and removing a column from a table.
+
+
+#### `test_add_and_update_decimal_column`
+
+```python
+test_add_and_update_decimal_column(self)
+```
+
+Test adding a decimal column and widening a decimal column's precision.
+
+
+#### `test_add_invalid_column`
+
+```python
+test_add_invalid_column(self)
+```
+
+Test adding an invalid column to a table.
+
+
+#### `test_add_invalid_decimal_column`
+
+```python
+test_add_invalid_decimal_column(self)
+```
+
+Test that adding a column with an invalid decimal type raises a LakeError.
+
+
+#### `test_add_or_update_table_calls_create_or_update_table`
+
+```python
+test_add_or_update_table_calls_create_or_update_table(self)
+```
+
+Test that add_or_update_table calls create_or_update_table with the same parameters.
+
+
+#### `test_add_or_update_table_deprecation_warning`
+
+```python
+test_add_or_update_table_deprecation_warning(self)
+```
+
+Test that add_or_update_table raises a deprecation warning at the call site.
+
+
+#### `test_column_schema_equality_considers_exclude_from_hash`
+
+```python
+test_column_schema_equality_considers_exclude_from_hash(self)
+```
+
+Test that ColumnSchema equality comparison considers exclude_from_hash field.
+
+
+#### `test_column_schema_exclude_from_hash_default`
+
+```python
+test_column_schema_exclude_from_hash_default(self)
+```
+
+Test that ColumnSchema defaults exclude_from_hash to False.
+
+
+#### `test_create_duplicate_table_and_invalid_namespace`
+
+```python
+test_create_duplicate_table_and_invalid_namespace(self)
+```
+
+Test creating a duplicate table in the catalog.
+
+
+#### `test_create_or_update_table_adds_column_with_description`
+
+```python
+test_create_or_update_table_adds_column_with_description(self)
+```
+
+Test that a column added in the same reconcile call gets its description in that call.
+
+
+#### `test_create_or_update_table_clears_descriptions`
+
+```python
+test_create_or_update_table_clears_descriptions(self)
+```
+
+Test that an empty-string description explicitly clears an existing one.
+
+
+#### `test_create_or_update_table_descriptions_are_idempotent`
+
+```python
+test_create_or_update_table_descriptions_are_idempotent(self)
+```
+
+Test that reconciling an unchanged schema writes nothing.
+
+A description that did not round-trip would be re-applied on every call, appending a new
+entry to the Iceberg metadata `schemas` array each time, so this asserts no growth and no
+catalog write at all.
+
+
+#### `test_create_or_update_table_existing_table_with_hash_include_hash_false`
+
+```python
+test_create_or_update_table_existing_table_with_hash_include_hash_false(self)
+```
+
+Test that create_or_update_table removes __orbitra_hash__ column from existing table when include_hash=False.
+
+
+#### `test_create_or_update_table_existing_table_with_hash_preserved`
+
+```python
+test_create_or_update_table_existing_table_with_hash_preserved(self)
+```
+
+Test that create_or_update_table preserves __orbitra_hash__ column to existing table with hash when include_hash=True.
+
+
+#### `test_create_or_update_table_existing_table_without_hash_include_hash_true`
+
+```python
+test_create_or_update_table_existing_table_without_hash_include_hash_true(self)
+```
+
+Test that create_or_update_table adds __orbitra_hash__ column to existing table without hash when include_hash=True.
+
+
+#### `test_create_or_update_table_new_table_with_include_hash_default`
+
+```python
+test_create_or_update_table_new_table_with_include_hash_default(self)
+```
+
+Test that create_or_update_table defaults to include_hash=False for new table.
+
+
+#### `test_create_or_update_table_new_table_with_include_hash_false`
+
+```python
+test_create_or_update_table_new_table_with_include_hash_false(self)
+```
+
+Test that create_or_update_table does NOT add __orbitra_hash__ column for new table when include_hash=False.
+
+
+#### `test_create_or_update_table_new_table_with_include_hash_true`
+
+```python
+test_create_or_update_table_new_table_with_include_hash_true(self)
+```
+
+Test that create_or_update_table adds __orbitra_hash__ column for new table when include_hash=True.
+
+
+#### `test_create_or_update_table_omitted_description_is_left_untouched`
+
+```python
+test_create_or_update_table_omitted_description_is_left_untouched(self)
+```
+
+Test that a declared None never clears an existing description.
+
+This is the guard against wiping descriptions on every existing caller, none of which
+declare descriptions today.
+
+
+#### `test_create_or_update_table_sets_and_changes_descriptions`
+
+```python
+test_create_or_update_table_sets_and_changes_descriptions(self)
+```
+
+Test that descriptions are set on a table created without them, then updated.
+
+
+#### `test_create_table`
+
+```python
+test_create_table(self, table_name: str)
+```
+
+Test creating a new table in the catalog.
+
+
+#### `test_create_table_with_include_hash_default`
+
+```python
+test_create_table_with_include_hash_default(self)
+```
+
+Test that create_table defaults to include_hash=False (no hash column).
+
+
+#### `test_create_table_with_include_hash_false`
+
+```python
+test_create_table_with_include_hash_false(self)
+```
+
+Test that create_table does NOT add __orbitra_hash__ column when include_hash=False.
+
+
+#### `test_create_table_with_include_hash_true`
+
+```python
+test_create_table_with_include_hash_true(self)
+```
+
+Test that create_table adds __orbitra_hash__ column when include_hash=True.
+
+
+#### `test_create_table_with_invalid_schema`
+
+```python
+test_create_table_with_invalid_schema(self)
+```
+
+Test creating a table with an invalid schema.
+
+
+#### `test_decimal_type_is_normalized`
+
+```python
+test_decimal_type_is_normalized(self, raw_type: str, expected_type: str)
+```
+
+Test that decimal column types are accepted and normalized to pyiceberg's string form.
+
+
+#### `test_default_kind`
+
+```python
+test_default_kind(self)
+```
+
+Test that the default kind for columns is 'regular'.
+
+
+#### `test_description_accepts_non_ascii`
+
+```python
+test_description_accepts_non_ascii(self)
+```
+
+Test that a non-ASCII description is accepted unchanged.
+
+
+#### `test_description_defaults_to_none`
+
+```python
+test_description_defaults_to_none(self)
+```
+
+Test that a description defaults to None, meaning "unmanaged".
+
+
+#### `test_description_is_excluded_from_equality`
+
+```python
+test_description_is_excluded_from_equality(self)
+```
+
+Test that schema equality ignores descriptions.
+
+A declared None means "unmanaged" and must compare equal to a table that already carries a
+description, so descriptions are diffed explicitly instead of through __eq__.
+
+
+#### `test_description_is_normalized`
+
+```python
+test_description_is_normalized(self)
+```
+
+Test that a description is stripped and that whitespace-only becomes an explicit clear.
+
+
+#### `test_description_normalization_is_idempotent`
+
+```python
+test_description_normalization_is_idempotent(self)
+```
+
+Test that re-validating a schema does not change its descriptions.
+
+``DBService._validate_table_schema`` round-trips a schema through
+``model_validate(model_dump())``, so a non-idempotent validator would corrupt descriptions.
+
+
+#### `test_description_rejects_invalid_values`
+
+```python
+test_description_rejects_invalid_values(self, description: str)
+```
+
+Test that over-long descriptions and control characters are rejected by the model.
+
+These must fail at validation time: a catalog-side rejection would land after earlier
+column commits in the same reconcile had already been applied.
+
+
+#### `test_descriptions_persisted_as_iceberg_metadata`
+
+```python
+test_descriptions_persisted_as_iceberg_metadata(self)
+```
+
+Test that descriptions are stored as the Iceberg field doc and comment table property.
+
+
+#### `test_drop_non_existent_table_via_service`
+
+```python
+test_drop_non_existent_table_via_service(self)
+```
+
+Test that dropping a non-existent table via DBService raises LakeError.
+
+
+#### `test_drop_table_invalid_namespace_via_service`
+
+```python
+test_drop_table_invalid_namespace_via_service(self)
+```
+
+Test that dropping a table from a non-existent namespace via DBService raises LakeError.
+
+
+#### `test_drop_table_via_service`
+
+```python
+test_drop_table_via_service(self)
+```
+
+Test dropping a table via the DBService layer.
+
+
+#### `test_exclude_from_hash_persisted_in_table_metadata`
+
+```python
+test_exclude_from_hash_persisted_in_table_metadata(self)
+```
+
+Test that exclude_from_hash field is correctly persisted and retrieved from table metadata.
+
+
+#### `test_excluded_column_changes_produce_same_hash`
+
+```python
+test_excluded_column_changes_produce_same_hash(self)
+```
+
+Test that changes in excluded columns do not affect the row hash.
+
+
+#### `test_get_non_existent_table_metadata`
+
+```python
+test_get_non_existent_table_metadata(self)
+```
+
+Test retrieving metadata for a non-existent table.
+
+
+#### `test_get_table_hash_sum_returns_none_for_empty_table`
+
+```python
+test_get_table_hash_sum_returns_none_for_empty_table(self)
+```
+
+Test that get_table_hash_sum returns None when the table is empty.
+
+
+#### `test_get_table_hash_sum_returns_none_for_legacy_string_hash`
+
+```python
+test_get_table_hash_sum_returns_none_for_legacy_string_hash(self)
+```
+
+Test that get_table_hash_sum returns None when __orbitra_hash__ column is of type string (legacy).
+
+
+#### `test_get_table_hash_sum_returns_none_when_hash_column_missing`
+
+```python
+test_get_table_hash_sum_returns_none_when_hash_column_missing(self)
+```
+
+Test that get_table_hash_sum returns None when __orbitra_hash__ column doesn't exist.
+
+
+#### `test_get_table_hash_sum_returns_sum_of_hashes`
+
+```python
+test_get_table_hash_sum_returns_sum_of_hashes(self)
+```
+
+Test that get_table_hash_sum returns the sum of hash values when table has data.
+
+
+#### `test_get_table_metadata`
+
+```python
+test_get_table_metadata(self, table_name: str, snapshot: Snapshot)
+```
+
+Test retrieving metadata for a specific table.
+
+This test checks that the metadata is returned correctly and matches the expected structure.
+
+
+#### `test_hash_value_matches_known_hashes`
+
+```python
+test_hash_value_matches_known_hashes(self)
+```
+
+Test that the generated hashes match known precomputed hash values.
+
+
+#### `test_invalid_decimal_type_is_rejected`
+
+```python
+test_invalid_decimal_type_is_rejected(self, invalid_type: str)
+```
+
+Test that malformed or out-of-bounds decimal types raise a ValueError.
+
+
+#### `test_legacy_string_hash_column_not_generated`
+
+```python
+test_legacy_string_hash_column_not_generated(self)
+```
+
+Test that hash is not generated when __orbitra_hash__ column is of type string (legacy tables).
+
+
+#### `test_legacy_table_without_descriptions_is_unchanged`
+
+```python
+test_legacy_table_without_descriptions_is_unchanged(self)
+```
+
+Test that a table with no descriptions is not written to by a no-description reconcile.
+
+
+#### `test_list_namespaces`
+
+```python
+test_list_namespaces(self, snapshot: Snapshot)
+```
+
+Test listing all namespaces in the catalog.
+
+
+#### `test_list_tables`
+
+```python
+test_list_tables(self, snapshot: Snapshot)
+```
+
+Test listing all tables in a specific namespace.
+
+
+#### `test_list_tables_invalid_namespace`
+
+```python
+test_list_tables_invalid_namespace(self)
+```
+
+Test listing tables in a non-existent namespace.
+
+
+#### `test_non_excluded_column_changes_produce_different_hash`
+
+```python
+test_non_excluded_column_changes_produce_different_hash(self)
+```
+
+Test that changes in non-excluded columns produce different row hashes.
+
+
+#### `test_remove_hash_column`
+
+```python
+test_remove_hash_column(self)
+```
+
+Test removing __orbitra_hash__ column from a table.
+
+
+#### `test_remove_invalid_column`
+
+```python
+test_remove_invalid_column(self)
+```
+
+Test removing an invalid column from a table.
+
+
+#### `test_set_column_descriptions_rejects_unknown_and_reserved_columns`
+
+```python
+test_set_column_descriptions_rejects_unknown_and_reserved_columns(self)
+```
+
+Test that describing a missing column, or an internal one, raises LakeError.
+
+#### `test_update_column_type_preserves_description`
+
+```python
+test_update_column_type_preserves_description(self)
+```
+
+Test that changing a column type keeps its description.
+
+
+#### `test_update_exclude_from_hash`
+
+```python
+test_update_exclude_from_hash(self)
+```
+
+Test that exclude_from_hash field can be updated via create_or_update_table.
+
+
+#### `test_update_table`
+
+```python
+test_update_table(self)
+```
+
+Test updating a table.
+
+

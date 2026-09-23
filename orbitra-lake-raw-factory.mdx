@@ -1,0 +1,31 @@
+---
+title: factory
+sidebarTitle: factory
+---
+
+# `orbitra.lake.raw.factory`
+
+## Functions
+
+### `get_raw_provider`
+
+```python
+get_raw_provider(settings: ClientSettings, credential: TokenCredential) -> BaseRawProvider
+```
+
+
+Factory function to get a Blob Storage service instance.
+
+**Args:**
+- `settings`: The application settings. Must define
+storage configuration such as\:
+- orbitra_lake_storage_account_url
+- orbitra_lake_raw_mode (e.g. "local", "azure").
+The container name is derived as
+`orbitra_lake_raw_container_prefix + <namespace>` per operation.
+- `credential`: Azure credential for authentication
+(used if mode is "azure").
+
+**Returns:**
+- An instance of the appropriate blob storage service implementation.
+

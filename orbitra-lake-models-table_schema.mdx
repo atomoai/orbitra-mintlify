@@ -1,0 +1,133 @@
+---
+title: table_schema
+sidebarTitle: table_schema
+---
+
+# `orbitra.lake.models.table_schema`
+
+## Functions
+
+### `validate_column_type`
+
+```python
+validate_column_type(value: str) -> str
+```
+
+
+Validate and normalize a column type string.
+
+Accepts the Iceberg primitive types as well as parameterized decimals in
+the form ``decimal(P, S)`` where ``1 <= P <= 38`` and ``0 <= S <= P``.
+Decimals are normalized to ``decimal(P, S)`` (with a space after the comma)
+to match pyiceberg's string representation so schema round-trips are stable.
+
+**Raises:**
+- `ValueError`: If the type is not a supported primitive or a valid decimal.
+
+
+### `validate_description`
+
+```python
+validate_description(value: Optional[str]) -> Optional[str]
+```
+
+
+Validate and normalize a table or column description.
+
+``None`` means "unmanaged" and is preserved as-is. A string is stripped, so a
+whitespace-only description normalizes to ``""``, which means "clear the
+description". Normalization is idempotent because ``_validate_table_schema``
+re-validates a schema through ``model_validate(model_dump())``.
+
+**Raises:**
+- `ValueError`: If the description is too long or contains control characters.
+
+
+## Classes
+
+### `ColumnSchema`
+
+
+Schema for a column in a table.
+
+**Attributes:**
+- `name`: The name of the column.
+- `type`: The data type of the column, represented as a string.
+Allowed types are "string", "int", "long", "float", "double",
+"boolean", "timestamp", "date", or a parameterized decimal in the
+form "decimal(P, S)" (e.g. "decimal(38, 18)").
+- `kind`: The kind of column,
+- "partition" for columns that are used for partitioning the table,
+- "regular" (default) for regular columns.
+- `exclude_from_hash`: If True, this column will be excluded from the row hash calculation.
+- `description`: A human-readable description of the column, stored as the
+Iceberg field ``doc``. ``None`` (the default) means the description is not managed
+by this schema and is left untouched; ``""`` clears any existing description.
+
+
+**Methods:**
+
+#### `ensure_description_is_valid`
+
+```python
+ensure_description_is_valid(cls, value: Optional[str]) -> Optional[str]
+```
+
+Validate and normalize the column description.
+
+
+#### `ensure_name_has_no_special_characters`
+
+```python
+ensure_name_has_no_special_characters(cls, value: str) -> str
+```
+
+Ensure the column name does not contain special characters.
+
+Only alphanumeric characters and underscores are allowed.
+
+
+#### `ensure_type_is_supported`
+
+```python
+ensure_type_is_supported(cls, value: str) -> str
+```
+
+Ensure the column type is a supported primitive or a valid decimal.
+
+
+### `TableSchema`
+
+
+Schema for a table in a database.
+
+**Attributes:**
+- `name`: The name of the table.
+- `columns`: A list of ColumnSchema objects representing the columns in the table.
+- `description`: A human-readable description of the table, stored as the
+Iceberg ``comment`` table property. ``None`` (the default) means the description is
+not managed by this schema and is left untouched; ``""`` clears any existing
+description.
+
+
+**Methods:**
+
+#### `ensure_description_is_valid`
+
+```python
+ensure_description_is_valid(cls, value: Optional[str]) -> Optional[str]
+```
+
+Validate and normalize the table description.
+
+#### `ensure_name_has_no_special_characters`
+
+```python
+ensure_name_has_no_special_characters(cls, value: str) -> str
+```
+
+Ensure the table name does not contain special characters.
+
+Only alphanumeric characters and underscores are allowed.
+
+

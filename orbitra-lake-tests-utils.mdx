@@ -1,0 +1,61 @@
+---
+title: utils
+sidebarTitle: utils
+---
+
+# `orbitra.lake.tests.utils`
+
+## Functions
+
+### `df_to_snapshot_json`
+
+```python
+df_to_snapshot_json(df: pd.DataFrame) -> str
+```
+
+
+Serialize a DataFrame exactly like pandas 2's default ``to_json`` so the snapshot files stay valid on pandas 3.
+
+pandas 2 emitted a datetime64 column as its int64 values // 10**6 regardless of resolution
+(whole seconds for the microsecond timestamps Iceberg returns), ``datetime.date`` objects as epoch
+milliseconds and ``Decimal`` objects as numbers. pandas 3 emits milliseconds for every resolution,
+Decimals as strings and deprecates the 'epoch' date format. The conversions are done here explicitly
+so the output is independent of the pandas major version and the snapshots did not have to change.
+
+
+### `setup_method`
+
+```python
+setup_method(request)
+```
+
+
+Fixture to set up the mock client for testing.
+
+This fixture initializes the Orbitra Lake client with the specified database mode and cleans up after tests.
+
+
+## Classes
+
+### `DummyToken`
+
+
+DummyToken class.
+
+
+### `DummyCredential`
+
+
+DummyCredential class.
+
+
+**Methods:**
+
+#### `get_token`
+
+```python
+get_token(self, *args, **kwargs)
+```
+
+Returns a fake token.
+

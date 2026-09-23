@@ -1,0 +1,49 @@
+---
+title: identity
+sidebarTitle: identity
+---
+
+# `orbitra.commons.auth.identity`
+
+## Functions
+
+### `get_current_azure_credential_info`
+
+```python
+get_current_azure_credential_info(settings: ClientSettings) -> AzureCredentialInfo
+```
+
+
+Return an AzureCredentialInfo object containing the type of Azure credential used for authentication and its corresponding client ID.
+
+**Args:**
+- `settings`: The client settings to use for authentication.
+
+**Returns:**
+- Object containing the type of Azure credential used for authentication and its corresponding client ID.
+
+
+## Classes
+
+### `AzureCredentialType`
+
+
+Enum representing the type of Azure credential used for authentication.
+
+
+### `AzureCredentialInfo`
+
+
+Class representing the type of Azure credential used for authentication and its corresponding client ID.
+
+
+**Methods:**
+
+#### `add_client_secret`
+
+```python
+add_client_secret(self, client_secret: str)
+```
+
+Add the client secret to the AzureCredentialInfo object. This method is only applicable for CLIENT_SECRET credential type.
+

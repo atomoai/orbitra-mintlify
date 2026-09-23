@@ -1,0 +1,67 @@
+---
+title: local
+sidebarTitle: local
+---
+
+# `orbitra.lake.raw.local`
+
+## Classes
+
+### `LocalRawProvider`
+
+
+Local filesystem implementation of BaseRawProvider.
+
+This class provides a local alternative to cloud-based raw data
+storage. Instead of uploading data to a remote Blob Storage,
+DataFrames are persisted as Parquet files on the local filesystem.
+
+**Attributes:**
+- `settings`: Orbitra Lake settings object that must
+include the attribute `orbitra_lake_local_path` to define the
+base directory for raw storage.
+
+
+**Methods:**
+
+#### `get_processed_flag`
+
+```python
+get_processed_flag(self, full_filename: str, namespace: str) -> bool
+```
+#### `get_raw_file_system`
+
+```python
+get_raw_file_system(self, namespace: str) -> AbstractFileSystem
+```
+
+#### `read_raw_bytes_from_blob`
+
+```python
+read_raw_bytes_from_blob(self, full_filename: str, namespace: str) -> io.BytesIO
+```
+
+#### `read_raw_df_from_blob`
+
+```python
+read_raw_df_from_blob(self, full_filename: str, namespace: str) -> pd.DataFrame
+```
+
+#### `save_raw_bytes_to_blob`
+
+```python
+save_raw_bytes_to_blob(self, bytes_io: io.BytesIO, full_filename: str, namespace: str) -> bool
+```
+
+#### `save_raw_df_to_blob`
+
+```python
+save_raw_df_to_blob(self, df: pd.DataFrame, full_filename: str, namespace: str) -> bool
+```
+
+#### `set_processed_flag`
+
+```python
+set_processed_flag(self, full_filename: str, namespace: str, is_processed: bool) -> None
+```
+

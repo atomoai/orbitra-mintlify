@@ -1,0 +1,511 @@
+---
+title: test_cli
+sidebarTitle: test_cli
+---
+
+# `orbitra.lake.tests.lake.test_cli`
+
+
+Unit tests for the `orbitra lake get-data` CLI command and plugin registration.
+
+## Functions
+
+### `capture_console`
+
+```python
+capture_console()
+```
+
+
+Replace the CLI console with one that captures output to a StringIO buffer.
+
+
+### `run_cli`
+
+```python
+run_cli(*args)
+```
+
+
+Run the lake sub-app, swallowing the SystemExit(0) cyclopts raises on success.
+
+
+### `test_create_or_update_table_invalid_schema_exits`
+
+```python
+test_create_or_update_table_invalid_schema_exits(capture_console)
+```
+
+
+An invalid --schema JSON should exit non-zero without calling the backend.
+
+
+### `test_create_or_update_table_parses_schema_and_calls_client`
+
+```python
+test_create_or_update_table_parses_schema_and_calls_client(capture_console)
+```
+
+
+Should parse the --schema JSON and forward it with the flags.
+
+
+### `test_download_bytes_from_raw_lake_error_exits`
+
+```python
+test_download_bytes_from_raw_lake_error_exits(tmp_path, capture_console)
+```
+
+
+A LakeError from the client should be reported and exit non-zero.
+
+### `test_download_bytes_from_raw_writes_file`
+
+```python
+test_download_bytes_from_raw_writes_file(tmp_path, capture_console)
+```
+
+
+Should read bytes from the blob and write them to the output path.
+
+
+### `test_get_data_calls_client_and_prints_table`
+
+```python
+test_get_data_calls_client_and_prints_table(capture_console)
+```
+
+
+Should call get_table_data with parsed args and render the rows.
+
+
+### `test_get_data_empty_result`
+
+```python
+test_get_data_empty_result(capture_console)
+```
+
+
+Should print a friendly message when the table returns no rows.
+
+
+### `test_get_data_invalid_filter_exits`
+
+```python
+test_get_data_invalid_filter_exits(capture_console)
+```
+
+
+An invalid --filter JSON should exit non-zero without querying the lake.
+
+
+### `test_get_data_lake_error_exits`
+
+```python
+test_get_data_lake_error_exits(capture_console)
+```
+
+
+A LakeError from the client should be reported and exit non-zero.
+
+
+### `test_get_data_multiple_filters`
+
+```python
+test_get_data_multiple_filters(capture_console)
+```
+
+
+Should accept multiple filters in the JSON array and combine them (AND).
+
+
+### `test_get_data_no_filters_returns_all`
+
+```python
+test_get_data_no_filters_returns_all(capture_console)
+```
+
+
+Should pass an empty filter list and no limit when none are given.
+
+
+### `test_get_data_unsupported_output_extension_fails_fast`
+
+```python
+test_get_data_unsupported_output_extension_fails_fast(tmp_path, capture_console)
+```
+
+
+An unsupported output extension should fail before querying the lake.
+
+
+### `test_get_data_with_select_projection`
+
+```python
+test_get_data_with_select_projection(capture_console)
+```
+
+
+Should pass the projected columns through as selected_fields.
+
+
+### `test_get_data_writes_csv_by_extension`
+
+```python
+test_get_data_writes_csv_by_extension(tmp_path, capture_console)
+```
+
+
+Should infer CSV format from a .csv output extension.
+
+
+### `test_get_data_writes_json_by_extension`
+
+```python
+test_get_data_writes_json_by_extension(tmp_path, capture_console)
+```
+
+
+Should infer JSON format from a .json output extension.
+
+
+### `test_get_data_writes_parquet`
+
+```python
+test_get_data_writes_parquet(tmp_path, capture_console)
+```
+
+
+Should write the result to a parquet file and not print a table.
+
+
+### `test_get_table_metadata_renders_schema`
+
+```python
+test_get_table_metadata_renders_schema(capture_console)
+```
+
+
+Should call get_table_metadata and render the columns as a table.
+
+
+### `test_get_table_metadata_writes_json`
+
+```python
+test_get_table_metadata_writes_json(tmp_path, capture_console)
+```
+
+
+Should write the TableSchema as JSON when --output is given.
+
+
+### `test_list_namespaces_calls_client_and_prints`
+
+```python
+test_list_namespaces_calls_client_and_prints(capture_console)
+```
+
+
+Should call list_namespaces and render the names.
+
+
+### `test_list_namespaces_empty`
+
+```python
+test_list_namespaces_empty(capture_console)
+```
+
+
+Should print a friendly message when there are no namespaces.
+
+
+### `test_list_namespaces_non_json_output_fails_fast`
+
+```python
+test_list_namespaces_non_json_output_fails_fast(tmp_path, capture_console)
+```
+
+
+A non-.json --output should fail before the client is reached.
+
+
+### `test_list_namespaces_writes_json`
+
+```python
+test_list_namespaces_writes_json(tmp_path, capture_console)
+```
+
+
+Should write the names as a JSON array when --output is a .json path.
+
+
+### `test_list_tables_calls_client_with_namespace`
+
+```python
+test_list_tables_calls_client_with_namespace(capture_console)
+```
+
+
+Should call list_tables with the namespace and render the names.
+
+
+### `test_list_tables_lake_error_exits`
+
+```python
+test_list_tables_lake_error_exits(capture_console)
+```
+
+
+A LakeError from the client should be reported and exit non-zero.
+
+
+### `test_list_tables_writes_json`
+
+```python
+test_list_tables_writes_json(tmp_path, capture_console)
+```
+
+
+Should write the table names as a JSON array.
+
+
+### `test_overwrite_data_check_hash_flag`
+
+```python
+test_overwrite_data_check_hash_flag(tmp_path, capture_console)
+```
+
+
+The --check-hash flag should be forwarded to the client.
+
+
+### `test_overwrite_data_non_json_output_fails_fast`
+
+```python
+test_overwrite_data_non_json_output_fails_fast(tmp_path, capture_console)
+```
+
+
+A non-.json --output should fail before reading input or reaching the client.
+
+
+### `test_overwrite_data_reads_parquet_and_calls_client`
+
+```python
+test_overwrite_data_reads_parquet_and_calls_client(tmp_path, capture_console)
+```
+
+
+Should read the input file into a DataFrame and pass it to overwrite_data.
+
+
+### `test_overwrite_data_unsupported_input_fails_fast`
+
+```python
+test_overwrite_data_unsupported_input_fails_fast(tmp_path, capture_console)
+```
+
+
+An unsupported --input extension should fail before the client is reached.
+
+
+### `test_overwrite_data_writes_result_json`
+
+```python
+test_overwrite_data_writes_result_json(tmp_path, capture_console)
+```
+
+
+--output should write the OverwriteTableDataResponse as JSON instead of printing it.
+
+
+### `test_parse_filters_in_list`
+
+```python
+test_parse_filters_in_list()
+```
+
+
+An `in` filter keeps its JSON list value with native types.
+
+
+### `test_parse_filters_in_requires_list`
+
+```python
+test_parse_filters_in_requires_list()
+```
+
+
+`in` with a scalar value violates the model rule (wrapped as ValidationError).
+
+
+### `test_parse_filters_invalid_json`
+
+```python
+test_parse_filters_invalid_json()
+```
+
+
+Malformed JSON is rejected.
+
+
+### `test_parse_filters_invalid_operator`
+
+```python
+test_parse_filters_invalid_operator()
+```
+
+
+An operator outside the model's Literal is rejected.
+
+
+### `test_parse_filters_none_and_empty`
+
+```python
+test_parse_filters_none_and_empty()
+```
+
+
+A missing or empty payload yields no filters.
+
+
+### `test_parse_filters_preserves_value_types`
+
+```python
+test_parse_filters_preserves_value_types()
+```
+
+
+Value types come straight from the JSON (numbers, strings) — not coerced.
+
+
+### `test_parse_schema_invalid_column_type`
+
+```python
+test_parse_schema_invalid_column_type()
+```
+
+
+A column type outside the allowed Literal is rejected.
+
+
+### `test_parse_schema_invalid_json`
+
+```python
+test_parse_schema_invalid_json()
+```
+
+
+Malformed JSON is rejected.
+
+
+### `test_parse_schema_valid`
+
+```python
+test_parse_schema_valid()
+```
+
+
+A valid TableSchema JSON parses into a TableSchema with native types.
+
+
+### `test_register_routes_get_data_through_root_app`
+
+```python
+test_register_routes_get_data_through_root_app(capture_console)
+```
+
+
+register() should mount `lake` so the root app routes `lake get-data`.
+
+
+### `test_register_routes_list_namespaces_through_root_app`
+
+```python
+test_register_routes_list_namespaces_through_root_app(capture_console)
+```
+
+
+register() should also route the newly added commands through the root app.
+
+
+### `test_run_query_calls_client_and_renders`
+
+```python
+test_run_query_calls_client_and_renders(capture_console)
+```
+
+
+Should call run_query with namespace/query/engine and render the rows.
+
+
+### `test_run_query_defaults_engine_local`
+
+```python
+test_run_query_defaults_engine_local(capture_console)
+```
+
+
+Engine should default to local when not given.
+
+
+### `test_run_query_limit_truncates`
+
+```python
+test_run_query_limit_truncates(capture_console)
+```
+
+
+--limit should truncate the result client-side.
+
+
+### `test_run_query_unsupported_output_fails_fast`
+
+```python
+test_run_query_unsupported_output_fails_fast(tmp_path, capture_console)
+```
+
+
+An unsupported --output extension should fail before running the query.
+
+
+### `test_run_query_writes_parquet`
+
+```python
+test_run_query_writes_parquet(tmp_path, capture_console)
+```
+
+
+Should write the (truncated) result to a parquet file.
+
+
+### `test_upload_bytes_to_raw_already_up_to_date`
+
+```python
+test_upload_bytes_to_raw_already_up_to_date(tmp_path, capture_console)
+```
+
+
+A False return means the blob already matched; report it without error.
+
+
+### `test_upload_bytes_to_raw_calls_client`
+
+```python
+test_upload_bytes_to_raw_calls_client(tmp_path, capture_console)
+```
+
+
+Should read the file's bytes and pass them to save_raw_bytes_to_blob.
+
+
+### `test_upload_bytes_to_raw_missing_file_exits`
+
+```python
+test_upload_bytes_to_raw_missing_file_exits(tmp_path, capture_console)
+```
+
+
+A missing --input file should exit non-zero without calling the client.
+
+

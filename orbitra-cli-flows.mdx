@@ -1,0 +1,105 @@
+---
+title: flows
+sidebarTitle: flows
+---
+
+# `orbitra flows`
+
+Commands provided by the `orbitra-flows` plugin.
+
+## Commands
+
+### `orbitra flows logs`
+
+```bash
+orbitra flows logs [OPTIONS]
+```
+
+Read the logs emitted by a flow run, ordered oldest to newest.
+
+**Options:**
+
+<div className="cli-table">
+
+| Flag | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| `--run-id` | `str` | yes |  | The ID of the flow run to read logs for. |
+| `--limit` | `int` | no | `None` | The maximum number of log records to return. If omitted, returns all logs. |
+| `--json` | `bool` | no | `False` | Print the logs as machine-readable JSON to stdout instead of a table. |
+| `--env` | `str` | no | `'prod'` | Target environment. |
+
+</div>
+
+**Examples:**
+
+```bash
+orbitra flows logs --run-id <run-id>
+```
+
+```bash
+orbitra flows logs --run-id 3f2504e0-4f89-11d3-9a0c-0305e82c3301 --limit 100 --json
+```
+
+### `orbitra flows run`
+
+```bash
+orbitra flows run [OPTIONS]
+```
+
+Trigger a Prefect deployment, optionally waiting for it to finish.
+
+**Options:**
+
+<div className="cli-table">
+
+| Flag | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| `--deployment` | `str` | yes |  | The deployment to run, in the format "\<FLOW_NAME>/\<DEPLOYMENT_NAME>". |
+| `--parameters` | `str` | no | `None` | A JSON object of parameters to pass to the flow run, identical to the dict the flows client forwards. Value types are read from the JSON as-is (numbers, booleans, strings, lists, objects). |
+| `--wait` | `bool` | no | `False` | Wait for the flow run to reach a terminal state and render its final state. |
+| `--timeout` | `float` | no | `None` | When waiting, the maximum number of seconds to wait before giving up. If omitted, waits indefinitely. |
+| `--poll-interval` | `float` | no | `5.0` | When waiting, the number of seconds between polling attempts. |
+| `--json` | `bool` | no | `False` | Print machine-readable JSON to stdout instead of a table. Without --wait, prints \{"id"\: "\<run-id>"\}; with --wait, prints the full flow run. |
+| `--env` | `str` | no | `'prod'` | Target environment. |
+
+</div>
+
+**Examples:**
+
+```bash
+orbitra flows run --deployment <deployment>
+```
+
+```bash
+orbitra flows run --deployment my-flow/prod --parameters '{"date": "2025-01-01", "limit": 100, "dry_run": true}' --wait --timeout 600 --poll-interval 10
+```
+
+### `orbitra flows status`
+
+```bash
+orbitra flows status [OPTIONS]
+```
+
+Read the current state of a flow run.
+
+**Options:**
+
+<div className="cli-table">
+
+| Flag | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| `--run-id` | `str` | yes |  | The ID of the flow run to inspect. |
+| `--json` | `bool` | no | `False` | Print the flow run as machine-readable JSON to stdout instead of a table. |
+| `--env` | `str` | no | `'prod'` | Target environment. |
+
+</div>
+
+**Examples:**
+
+```bash
+orbitra flows status --run-id <run-id>
+```
+
+```bash
+orbitra flows status --run-id 3f2504e0-4f89-11d3-9a0c-0305e82c3301 --json
+```

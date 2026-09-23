@@ -1,0 +1,751 @@
+---
+title: test_data
+sidebarTitle: test_data
+---
+
+# `orbitra.lake.tests.lake.test_data`
+
+## Functions
+
+### `add_metadata`
+
+```python
+add_metadata(request)
+```
+
+
+Fixture to add metadata for the test class.
+
+
+### `atomic_namespace`
+
+```python
+atomic_namespace(request)
+```
+
+
+Fixture to create the namespace used by TestAtomicPartitionOverwrite.
+
+
+## Classes
+
+### `TestData`
+
+
+Test suite for the client methods that alter table contents.
+
+
+**Methods:**
+
+#### `test_add_data`
+
+```python
+test_add_data(self, table_options: tuple[str, int], snapshot: Snapshot)
+```
+
+Test adding data to the table.
+
+It runs twice to ensure that partitions are created and overwritten correctly.
+
+
+#### `test_add_data_after_table_update`
+
+```python
+test_add_data_after_table_update(self, table_name: str, snapshot: Snapshot)
+```
+
+Test adding data to the table after updating the table schema.
+
+
+#### `test_add_data_invalid_column_type`
+
+```python
+test_add_data_invalid_column_type(self)
+```
+
+Test adding data with an invalid column type.
+
+
+#### `test_add_data_missing_column`
+
+```python
+test_add_data_missing_column(self, snapshot: Snapshot)
+```
+
+Test adding data with a missing column in the table schema.
+
+
+#### `test_add_data_with_new_column`
+
+```python
+test_add_data_with_new_column(self, table_name: str, snapshot: Snapshot)
+```
+
+Test adding data with a new column to the table.
+
+This test checks that data can be added to the table with a new column and verifies that the new column is present in the data.
+
+
+#### `test_add_empty_data`
+
+```python
+test_add_empty_data(self)
+```
+
+Test adding an empty DataFrame to the table.
+
+
+#### `test_append_data`
+
+```python
+test_append_data(self, table_options: tuple[str, int], snapshot: Snapshot)
+```
+
+Test appending data to a table without overwriting existing rows.
+
+Verifies that the row count grows by the expected amount and that existing data is left intact.
+
+
+#### `test_append_data_non_existent_table`
+
+```python
+test_append_data_non_existent_table(self)
+```
+
+Test appending data to a non-existent table.
+
+
+#### `test_data_non_existent_table`
+
+```python
+test_data_non_existent_table(self)
+```
+
+Test adding data to a non-existent table.
+
+
+#### `test_delete_data`
+
+```python
+test_delete_data(self, delete_options: tuple[str, list[dict]])
+```
+
+Test deleting data from the table based on a specific partition.
+
+This test checks that data can be deleted from the table and verifies that the data is no longer present after deletion.
+
+
+#### `test_filter_validation_errors`
+
+```python
+test_filter_validation_errors(self)
+```
+
+Test the filter validation errors.
+
+
+#### `test_get_data`
+
+```python
+test_get_data(self, get_options: tuple[str, list[dict], int], snapshot: Snapshot)
+```
+
+Test retrieving data from the table with various filters.
+
+The first element of the tuple is the table, the second is the filter criteria, and the third is the expected number of results.
+
+
+#### `test_get_data_invalid_selected_fields`
+
+```python
+test_get_data_invalid_selected_fields(self)
+```
+
+Test that projecting a non-existent column raises a descriptive LakeError.
+
+
+#### `test_get_data_selected_fields_strips_hash`
+
+```python
+test_get_data_selected_fields_strips_hash(self)
+```
+
+Test that __orbitra_hash__ is dropped from the result whether or not it is projected.
+
+
+#### `test_get_data_with_limit`
+
+```python
+test_get_data_with_limit(self)
+```
+
+Test retrieving data with a limit.
+
+
+#### `test_get_data_with_selected_fields`
+
+```python
+test_get_data_with_selected_fields(self)
+```
+
+Test that selected_fields projects only the requested columns, with and without filters.
+
+
+#### `test_invalid_delete_data`
+
+```python
+test_invalid_delete_data(self)
+```
+
+Test deleting data with invalid partition filters.
+
+
+#### `test_invalid_get_data`
+
+```python
+test_invalid_get_data(self)
+```
+
+Test retrieving data with invalid partition filters.
+
+
+#### `test_invalid_overwrite_data_by_custom_columns`
+
+```python
+test_invalid_overwrite_data_by_custom_columns(self)
+```
+
+Test overwriting data with invalid parameters.
+
+
+#### `test_overwrite_data_by_custom_columns`
+
+```python
+test_overwrite_data_by_custom_columns(self, overwrite_data_by_custom_columns_options: tuple[str, list[str], int, int], snapshot: Snapshot)
+```
+
+Test overwriting data into the table by custom columns.
+
+
+#### `test_parallel_overwrite_data`
+
+```python
+test_parallel_overwrite_data(self, monkeypatch, caplog)
+```
+
+Concurrent overwrite_data calls on distinct partitions all succeed without orbitra's @retry firing.
+
+Iceberg's optimistic concurrency operates at the table-snapshot level, so parallel commits to
+disjoint partitions still race on the catalog's snapshot pointer and raise CommitFailedException.
+Since pyiceberg 0.12 ``Transaction.commit_transaction`` retries that failure itself: it refreshes
+the table, validates the concurrent snapshots against the overwrite's conflict predicate (the
+touched partitions) and re-plans the snapshot. Orbitra's @retry decorator on the overwrite_*
+methods is therefore only a last resort for same-partition conflicts (ValidationException) and
+must stay idle here. This test verifies three things: every worker returns successfully, the
+conflict was actually resolved inside pyiceberg (its retry warning was logged), and orbitra's
+own @retry path never slept.
+
+The patch targets ``orbitra.lake.utils.retry.sleep`` specifically (the name bound by
+``from time import sleep`` in that module), not the global ``time.sleep``, so the counter reflects
+orbitra's retry alone.
+
+
+#### `test_run_query`
+
+```python
+test_run_query(self, query: str, expected_count: int, snapshot: Snapshot)
+```
+
+Test running a query on the table.
+
+
+### `TestAtomicPartitionOverwrite`
+
+
+Partition overwrite must land as a single atomic overwrite snapshot (ORBITRA-835).
+
+The upstream ``dynamic_partition_overwrite`` commits a delete snapshot and an append snapshot
+separately (Unity Catalog rejects multi-snapshot transactions), leaving a visible intermediate
+state between them. These tests pin the replacement semantics: one commit per operation, with
+the same partition-replacement contract as before.
+
+
+**Methods:**
+
+#### `test_client_rejects_null_partition_value`
+
+```python
+test_client_rejects_null_partition_value(self)
+```
+
+The client-level contract refuses null partition values before reaching the db layer.
+
+
+#### `test_concurrent_writer_on_untouched_combination_of_composite_spec_is_not_a_conflict`
+
+```python
+test_concurrent_writer_on_untouched_combination_of_composite_spec_is_not_a_conflict(self, monkeypatch, caplog)
+```
+
+A concurrent append to (a,2) while (a,1) and (b,2) are overwritten is resolved inside pyiceberg, without orbitra's @retry.
+
+The conflict-detection predicate must stay exact. If it claimed the cross product of the touched values,
+(a,2) would be flagged as a conflict, raise ValidationException and cost the ~45s of retry backoff.
+
+
+#### `test_db_overwrite_null_partition_rejected_on_other_spec_file`
+
+```python
+test_db_overwrite_null_partition_rejected_on_other_spec_file(self)
+```
+
+Overwriting a null partition is refused when its rows may sit in a file of another spec, instead of leaving them behind.
+
+Arrow joins never match null keys, so the copy-on-write path cannot tell the null partition's rows
+apart; failing loudly beats a silent stale partition. The client rejects null partition values anyway.
+
+
+#### `test_db_overwrite_null_partition_value`
+
+```python
+test_db_overwrite_null_partition_value(self)
+```
+
+At the db level a null partition value is replaced like any other partition, still in one snapshot.
+
+
+#### `test_metadata_only_discovery_prunes_manifests_of_untouched_partitions`
+
+```python
+test_metadata_only_discovery_prunes_manifests_of_untouched_partitions(self, monkeypatch)
+```
+
+Manifest pruning uses the exact partition predicate, not the conservative scan filter.
+
+`In` only prunes a manifest when every touched value falls outside its partition summary range
+(`_ManifestEvalVisitor.visit_in`), so a sparse set over a composite spec leaves nearly every manifest
+unpruned and fetches its entries from storage for nothing. The exact Or of per-partition Ands prunes by
+value, and the manifest evaluator runs once per manifest — not once per file — so the conservative shape
+that scan planning needs buys nothing here.
+
+
+#### `test_overwrite_after_evolution_from_unpartitioned`
+
+```python
+test_overwrite_after_evolution_from_unpartitioned(self)
+```
+
+A file written while the table was unpartitioned is rewritten row-level when it straddles a touched partition.
+
+This is the shape Databricks and dbt produce (data under the initial unpartitioned spec, or compacted
+into one unpartitioned file by OPTIMIZE) and the one that made the previous record-matching
+implementation silently append instead of replace (ORBITRA-908). The pre-evolution file holds two
+partitions: the overwritten one is dropped, the other is kept, still in one snapshot.
+
+
+#### `test_overwrite_after_evolution_from_unpartitioned_repeats_stably`
+
+```python
+test_overwrite_after_evolution_from_unpartitioned_repeats_stably(self)
+```
+
+Once the straddling file has been rewritten under the current spec, later overwrites take the fast path and stay exact.
+
+
+#### `test_overwrite_after_non_identity_old_spec`
+
+```python
+test_overwrite_after_non_identity_old_spec(self)
+```
+
+A file written under an older non-identity spec (truncate) is rewritten row-level like any other foreign-spec file.
+
+The identity guard only inspects the current spec. Inclusive projection of `part == 'ab'` onto
+truncate(1) yields `part_trunc == 'a'`: a conservative match that selects the straddling file, after
+which the anti-join keeps 'ac'. The file is registered with add_files because pyiceberg needs
+pyiceberg_core to write non-identity partitions itself.
+
+
+#### `test_overwrite_after_partition_column_rename`
+
+```python
+test_overwrite_after_partition_column_rename(self)
+```
+
+Renaming the partition source column between writes does not detach existing files from their partition.
+
+Exercised at the db level: the service layer's get_table_metadata matches partition fields to
+columns by name, so an externally renamed partition column is a pre-existing routing limitation
+there, unrelated to how the overwrite itself resolves columns (by source_id).
+
+
+#### `test_overwrite_after_partition_spec_evolution_replaces_old_spec_rows`
+
+```python
+test_overwrite_after_partition_spec_evolution_replaces_old_spec_rows(self)
+```
+
+Rows in files written under an older partition spec are replaced when their current-spec partition is touched.
+
+Partition membership is decided by row value, not by partition record under the current spec, so a
+pre-evolution file is rewritten copy-on-write: its rows of the overwritten partition go, the rest stay.
+
+
+#### `test_overwrite_after_same_arity_spec_replacement`
+
+```python
+test_overwrite_after_same_arity_spec_replacement(self)
+```
+
+A same-arity spec replacement must not drop old-spec files on coincidental record equality.
+
+pyiceberg's Record equality is positional and spec-blind: a file partitioned by part="a"
+under the old spec compares equal to a new-spec record part2="a". Files must be matched by the
+values of the current partition columns, never by record shape — otherwise this is a silent
+whole-file delete.
+
+
+#### `test_overwrite_all_partitions`
+
+```python
+test_overwrite_all_partitions(self)
+```
+
+A df covering every partition replaces the whole table content in one snapshot.
+
+
+#### `test_overwrite_empty_df_raises_without_commit`
+
+```python
+test_overwrite_empty_df_raises_without_commit(self)
+```
+
+An empty df is rejected before any snapshot is committed.
+
+
+#### `test_overwrite_multi_column_partition`
+
+```python
+test_overwrite_multi_column_partition(self)
+```
+
+Only the exact partition combinations present in the df are replaced on a multi-column spec.
+
+
+#### `test_overwrite_multi_column_partition_after_evolution_from_unpartitioned`
+
+```python
+test_overwrite_multi_column_partition_after_evolution_from_unpartitioned(self)
+```
+
+On a composite spec, a straddling foreign-spec file loses exactly the touched combinations, not their cross product.
+
+The scan filter is one In per partition column, so touching (a,1) and (b,2) also selects rows of (a,2)
+and (b,1); the anti-join must keep those. Without the per-column filter this shape plans an Or of one
+And per touched partition and took ~23s for 200 partitions over 401 files.
+
+
+#### `test_overwrite_native_table_reads_no_data_files`
+
+```python
+test_overwrite_native_table_reads_no_data_files(self, monkeypatch)
+```
+
+On an SDK-native table every live file is under the current spec: the overwrite stays metadata-only.
+
+Files of the touched partitions are dropped whole from their manifest entries; nothing is read back
+through ArrowScan. This is the fast path that keeps the common case at today's cost.
+
+
+#### `test_overwrite_partition_value_types`
+
+```python
+test_overwrite_partition_value_types(self, partition_type_options: tuple[str, object, object])
+```
+
+Partition record matching holds across physical value representations (int days, micros, ...).
+
+
+#### `test_overwrite_partition_with_multiple_data_files`
+
+```python
+test_overwrite_partition_with_multiple_data_files(self)
+```
+
+Every data file of a touched partition is replaced, not just the latest one.
+
+
+#### `test_overwrite_partitions_commits_single_snapshot`
+
+```python
+test_overwrite_partitions_commits_single_snapshot(self)
+```
+
+Overwriting existing partitions must produce exactly one snapshot, tagged with the operation id.
+
+
+#### `test_overwrite_partitions_data_rejects_non_identity_transform`
+
+```python
+test_overwrite_partitions_data_rejects_non_identity_transform(self)
+```
+
+The db-level method refuses partition specs with non-identity transforms with a LakeError.
+
+
+#### `test_overwrite_partitions_data_rejects_unpartitioned_table`
+
+```python
+test_overwrite_partitions_data_rejects_unpartitioned_table(self)
+```
+
+The db-level method refuses unpartitioned tables with a LakeError.
+
+
+#### `test_overwrite_planner_overselection_never_drops_untouched_current_spec_file`
+
+```python
+test_overwrite_planner_overselection_never_drops_untouched_current_spec_file(self, monkeypatch)
+```
+
+A current-spec file the planner returns for a partition that is not being overwritten is kept, never dropped whole.
+
+The fast path trusts the planner's per-spec evaluation but re-checks the file's own partition record
+against the touched set. Simulated by planning without the row filter: files of untouched partitions
+reach the loop, fall through to the row-level path and come out untouched.
+
+
+#### `test_overwrite_refuses_formerly_partitioned_table_before_hash_short_circuit`
+
+```python
+test_overwrite_refuses_formerly_partitioned_table_before_hash_short_circuit(self)
+```
+
+With check_hash=True the refusal comes before the unchanged-data no-op, and the db-level method refuses too.
+
+
+#### `test_overwrite_refuses_full_table_replacement_after_partition_field_removed`
+
+```python
+test_overwrite_refuses_full_table_replacement_after_partition_field_removed(self)
+```
+
+Removing the partition field must not silently widen an overwrite into a full-table replacement.
+
+overwrite_data picks partition replacement or full-table replacement from the table's *current*
+partition metadata. Once an external engine drops the partition field, the very same call that used to
+replace one partition replaces the whole table, and the untouched partitions are deleted with no error.
+The destructive transition is cheap to spot before anything is written — the current spec has no fields
+while the spec history does — and it is distinct from a table that merely accumulated specs (a
+Databricks OPTIMIZE leaves the partitioned spec as the default, and that overwrite stays correct).
+
+
+#### `test_overwrite_refuses_when_compound_spec_loses_a_field`
+
+```python
+test_overwrite_refuses_when_compound_spec_loses_a_field(self)
+```
+
+Dropping one field of a compound spec must not silently coarsen the replacement scope.
+
+Routing still picks partition replacement, so a guard that only looks for a fully unpartitioned table
+never sees this one, yet replacing (a, 1) now replaces every row with p1='a'. The response reports
+`modified_partitions=[('a',)]`, which is accurate under the new spec and misleading for a caller who
+still thinks in (p1, p2). Both dangerous shapes share one signal: the set of partition source columns
+shrank — the fully unpartitioned table is just its degenerate case.
+
+
+#### `test_overwrite_replaces_touched_partitions_only`
+
+```python
+test_overwrite_replaces_touched_partitions_only(self)
+```
+
+Partitions present in the df are fully replaced; untouched partitions are preserved.
+
+
+#### `test_overwrite_rewrites_externally_written_string_file`
+
+```python
+test_overwrite_rewrites_externally_written_string_file(self)
+```
+
+A straddling file written by an external engine (32-bit ``string`` columns) is rewritten, not rejected.
+
+ArrowScan yields the file's physical ``string`` type while the df's keys are ``large_string``; without
+casting the join keys Arrow raises ``Incompatible data types for corresponding join field keys``.
+
+
+#### `test_overwrite_routes_partition_field_named_by_external_engine`
+
+```python
+test_overwrite_routes_partition_field_named_by_external_engine(self)
+```
+
+A partition field named freely by an external engine still routes the client to the partition overwrite.
+
+dbt on DuckDB names the field e.g. `identity_country_2` for column `country`. get_table_metadata used
+to match partition columns by field name, reported the column as regular and the client rejected the
+overwrite with "has partition columns". Resolving by source field id fixes the routing, and the metadata
+round-trip through create_or_update_table stays a no-op.
+
+
+#### `test_overwrite_wraps_planner_errors_and_removes_written_files`
+
+```python
+test_overwrite_wraps_planner_errors_and_removes_written_files(self, monkeypatch)
+```
+
+A scan-planning failure surfaces as LakeError and leaves neither a snapshot nor orphan parquet files behind.
+
+pyiceberg refuses to plan over equality delete files with a ValueError; the previous implementation
+silently skipped DELETES manifests, so failing under the SDK's error type is the signalled contract change.
+
+
+#### `test_same_partition_conflict_is_replanned_by_orbitra_retry`
+
+```python
+test_same_partition_conflict_is_replanned_by_orbitra_retry(self, monkeypatch, caplog)
+```
+
+A concurrent writer replacing the SAME partition is resolved by orbitra's @retry, not by pyiceberg.
+
+pyiceberg (>= 0.12) retries a CommitFailedException internally, but it keeps the planned file set
+frozen and validates it against the refreshed table: files it wanted to delete were already
+deleted by the competing writer, so it raises ValidationException instead of re-planning. The
+orbitra decorator catches that and re-executes the whole operation from a fresh snapshot, so the
+last writer wins and the table never holds both versions of the partition.
+
+
+### `TestAtomicCustomColumnsOverwrite`
+
+
+Custom-columns overwrite must land as a single atomic overwrite snapshot (ORBITRA-833).
+
+The delete + append implementation commits two snapshots separately (Unity Catalog rejects
+multi-snapshot transactions), leaving a visible intermediate state between them. These tests pin
+the replacement semantics: one commit per operation, rows matching the custom-column keys fully
+replaced, everything else preserved.
+
+
+**Methods:**
+
+#### `test_db_overwrite_by_custom_columns_rejects_null_keys`
+
+```python
+test_db_overwrite_by_custom_columns_rejects_null_keys(self)
+```
+
+The db-level method refuses null values in custom columns instead of silently leaving stale rows.
+
+
+#### `test_overwrite_by_custom_columns_after_spec_evolution`
+
+```python
+test_overwrite_by_custom_columns_after_spec_evolution(self)
+```
+
+Rows in files written under an older partition spec are still replaced when their keys match.
+
+Custom-columns matching is row-level: scan planning projects the prune filter per spec, so
+pre-evolution files are scanned and their matching rows rewritten via the anti-join.
+
+
+#### `test_overwrite_by_custom_columns_commits_single_snapshot`
+
+```python
+test_overwrite_by_custom_columns_commits_single_snapshot(self)
+```
+
+Upserting existing keys must produce exactly one snapshot, tagged with the operation id.
+
+
+#### `test_overwrite_by_custom_columns_empty_df_raises_without_commit`
+
+```python
+test_overwrite_by_custom_columns_empty_df_raises_without_commit(self)
+```
+
+An empty df is rejected before any snapshot is committed.
+
+#### `test_overwrite_by_custom_columns_externally_written_string_file`
+
+```python
+test_overwrite_by_custom_columns_externally_written_string_file(self)
+```
+
+A string custom key still joins against a file written by an external engine (32-bit ``string`` columns).
+
+The df's keys are ``large_string`` while ArrowScan yields the file's physical ``string``; without
+casting the join keys Arrow raises ``Incompatible data types for corresponding join field keys``
+(ORBITRA-908 follow-up). Matched rows are replaced, the rest of the file is rewritten unchanged.
+
+
+#### `test_overwrite_by_custom_columns_full_scan_warning_suppressed`
+
+```python
+test_overwrite_by_custom_columns_full_scan_warning_suppressed(self)
+```
+
+suppress_warnings=True silences the full-scan warning.
+
+
+#### `test_overwrite_by_custom_columns_no_warning_when_pruned`
+
+```python
+test_overwrite_by_custom_columns_no_warning_when_pruned(self)
+```
+
+No warning when the partition columns are covered by the custom columns or the table is unpartitioned.
+
+
+#### `test_overwrite_by_custom_columns_prune_rewrites_old_spec_partial_file`
+
+```python
+test_overwrite_by_custom_columns_prune_rewrites_old_spec_partial_file(self)
+```
+
+With pruning active, an old-spec file holding matching and non-matching keys is rewritten, not truncated.
+
+The prune filter's unresolvable term becomes a row-level residual on old-spec files; the read
+path must ignore it (the SDK reads whole files with ALWAYS_TRUE) so the anti-join alone decides
+what is removed. If a pyiceberg upgrade ever starts applying task residuals on read, this test
+catches the resulting silent row loss.
+
+
+#### `test_overwrite_by_custom_columns_prunes_by_partition`
+
+```python
+test_overwrite_by_custom_columns_prunes_by_partition(self)
+```
+
+With partition columns inside the custom columns, untouched partitions keep even matching keys.
+
+
+#### `test_overwrite_by_custom_columns_rewrites_partial_files`
+
+```python
+test_overwrite_by_custom_columns_rewrites_partial_files(self)
+```
+
+A file holding matching and non-matching rows keeps the non-matching remainder.
+
+
+#### `test_overwrite_by_custom_columns_warns_on_full_table_scan`
+
+```python
+test_overwrite_by_custom_columns_warns_on_full_table_scan(self)
+```
+
+Custom columns that don't cover the partition columns trigger a full-scan warning.
+
+
+#### `test_overwrite_by_custom_columns_without_partition_key`
+
+```python
+test_overwrite_by_custom_columns_without_partition_key(self)
+```
+
+Without partition columns among the custom columns, matching keys are replaced across all partitions.
+
+

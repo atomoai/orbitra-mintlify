@@ -1,0 +1,162 @@
+---
+title: cli
+sidebarTitle: cli
+---
+
+# `orbitra.commons.cli`
+
+
+Orbitra CLI - command-line interface for authentication and account management.
+
+## Functions
+
+### `email_send`
+
+```python
+email_send() -> None
+```
+
+
+Send an email via Microsoft Graph.
+
+Provide the body inline with --body or from a file with --body-file (exactly one).
+Recipients and attachments accept repeated flags, e.g.
+``orbitra email send --subject Hi --to a@x.com --to b@y.com --body "Hello" --attach report.csv``.
+
+**Args:**
+- `subject`: The email subject.
+- `to`: Recipient address(es); repeat --to for multiple.
+- `body`: Inline body text. Mutually exclusive with --body-file.
+- `body_file`: Path to a file whose contents become the body. Mutually exclusive with --body.
+- `cc`: CC address(es); repeat --cc for multiple.
+- `bcc`: BCC address(es); repeat --bcc for multiple.
+- `attach`: File path(s) to attach; repeat --attach for multiple.
+- `body_format`: Body format, --format (default\: html).
+- `reply_to`: Reply-to address(es); repeat --reply-to for multiple.
+- `env`: Target environment (default\: prod).
+
+### `get_token`
+
+```python
+get_token() -> None
+```
+
+
+Obtain an access token for a given scope.
+
+**Args:**
+- `scope`: The Azure AD scope to request.
+- `env`: Target environment.
+
+
+### `load_cli_plugins`
+
+```python
+load_cli_plugins(target_app: cyclopts.App) -> None
+```
+
+
+Discover and mount CLI subcommands registered by installed packages.
+
+Other Orbitra SDKs (e.g. ``orbitra-lake``) extend the ``orbitra`` CLI by
+declaring an entry point in the ``orbitra.cli.plugins`` group that resolves
+to a ``register(app)`` callable. Each plugin mounts its own commands or
+sub-apps onto the root app. This keeps the dependency direction intact: the
+commons SDK never imports the other SDKs — they opt in when installed.
+
+A plugin that fails to load or register is skipped with a warning so a single
+broken plugin never breaks the rest of the CLI.
+
+**Args:**
+- `target_app`: The root cyclopts app to mount discovered subcommands onto.
+
+
+### `login`
+
+```python
+login() -> None
+```
+
+
+Authenticate with the Orbitra platform via Azure AD.
+
+**Args:**
+- `use_device_code`: Use the combined (blocking) device code authentication flow.
+- `use_interactive_browser`: Use interactive browser authentication flow (default).
+- `start_device_code`: Start a two-step device code login\: print the URL + code and return
+immediately without polling. Pair with --complete-device-code. Agent-friendly.
+- `complete_device_code`: Finish a login started with --start-device-code by polling for the token.
+- `env`: Target environment.
+
+
+### `logout`
+
+```python
+logout() -> None
+```
+
+
+Clear cached authentication credentials.
+
+**Args:**
+- `env`: Target environment. If not specified, clears all credentials.
+
+
+### `secrets_delete_cmd`
+
+```python
+secrets_delete_cmd() -> None
+```
+
+
+Delete a secret from a User Key Vault.
+
+**Args:**
+- `name`: The secret name.
+- `key_vault`: Vault name override; uses client setting if None.
+- `environment`: Target environment (default\: prod).
+
+
+### `secrets_list_cmd`
+
+```python
+secrets_list_cmd() -> None
+```
+
+
+List all secret names in a User Key Vault.
+
+**Args:**
+- `key_vault`: Vault name override; uses client setting if None.
+- `environment`: Target environment (default\: prod).
+
+
+### `secrets_set`
+
+```python
+secrets_set() -> None
+```
+
+
+Create or update a secret in a User Key Vault.
+
+**Args:**
+- `name`: The secret name.
+- `value`: The secret value.
+- `key_vault`: Vault name override; uses client setting if None.
+- `environment`: Target environment (default\: prod).
+
+
+### `show`
+
+```python
+show() -> None
+```
+
+
+Display authentication information.
+
+**Args:**
+- `env`: Target environment. If not specified, shows all environments.
+
+

@@ -1,0 +1,201 @@
+---
+title: cli
+sidebarTitle: cli
+---
+
+# `orbitra.lake.cli`
+
+
+Orbitra Lake CLI plugin.
+
+Registers the ``orbitra lake`` sub-app on the root ``orbitra`` CLI (defined in
+``orbitra-commons``) via the ``orbitra.cli.plugins`` entry point group. The
+commons SDK discovers and mounts this sub-app at runtime, so the dependency
+direction (``commons`` <- ``lake``) is preserved: commons never imports lake.
+
+
+## Functions
+
+### `create_or_update_table`
+
+```python
+create_or_update_table() -> None
+```
+
+
+Create a table, or reconcile an existing one to a schema (no-op if already matching).
+
+Creates the table when it does not exist. When it already exists, the schema is
+reconciled to match: columns are added, removed (with --allow-column-removal) or
+retyped as needed. If the existing table already matches the given schema (and the
+--include-hash setting), nothing is changed and the current schema is returned.
+Partition columns cannot change — attempting to alter them is an error.
+
+**Args:**
+- `namespace`: The namespace where the table lives (or will be created).
+- `schema`: The table schema as a JSON object, identical to the lake-api TableSchema payload. It has "name" (str), an optional
+"description" (str) and "columns" (a list of objects with "name", "type" and optional "kind"/"exclude_from_hash"/"description").
+Allowed "type"\: "string", "int", "long", "float", "double", "boolean", "timestamp", "date". Allowed "kind"\: "partition" or
+"regular" (default). Omitting a "description" leaves any existing one untouched; passing "" clears it.
+Sample\: --schema '{"name"\: "my_table", "description"\: "My table", "columns"\: [{"name"\: "id", "type"\: "long", "description"\: "Row id"},
+{"name"\: "dt", "type"\: "date", "kind"\: "partition"}]}'
+- `allow_column_removal`: Allow removing columns absent from the schema when updating an existing table.
+- `include_hash`: Add the __orbitra_hash__ column for content-based change detection.
+- `env`: Target environment.
+
+
+### `download_bytes_from_raw`
+
+```python
+download_bytes_from_raw() -> None
+```
+
+
+Download a raw blob's bytes to a local file, unchanged.
+
+**Args:**
+- `namespace`: Namespace used to compose the raw storage container.
+- `name`: The blob path within the container to read, e.g. "finance/2025/report.pdf".
+- `output`: Local path to write the downloaded bytes to.
+- `env`: Target environment.
+
+
+### `get_data`
+
+```python
+get_data() -> None
+```
+
+
+Read rows from a lake table, optionally filtered by column values.
+
+**Args:**
+- `namespace`: The namespace where the table is located.
+- `table`: The name of the table to read from.
+- `filter`: A JSON array of column filters, identical to the lake-api query payload. Each item is an object with "column", "op" and "value".
+Allowed "op"\: "==", ">", ">=", "&lt;", "<=", "in" (for "in", "value" must be a JSON list). Value types are read from the JSON as-is
+(numbers, booleans, strings, lists); filters are combined with AND.
+Sample\: --filter '[{"column"\: "DT_COMPTC", "op"\: "&gt;=", "value"\: "2025-01-01"}, {"column"\: "NR_COTST", "op"\: "in", "value"\: [10, 40]}]'
+- `select`: Columns to project from the table. If omitted, all columns are returned. Restricting the projection to the columns you need
+is the recommended way to read subsets of wide tables. Repeat the flag or pass several names\: --select col_a --select col_b.
+- `limit`: Maximum number of rows to return. If omitted, all rows are returned.
+- `output`: Write the result to this path instead of printing it. The format is inferred from the extension\: .parquet, .csv or .json.
+- `env`: Target environment.
+
+
+### `get_table_metadata`
+
+```python
+get_table_metadata() -> None
+```
+
+
+Show a table's schema (columns, types, partitioning).
+
+**Args:**
+- `namespace`: The namespace where the table is located.
+- `table`: The name of the table.
+- `output`: Write the schema to this path instead of printing it. Only .json is supported (the TableSchema as JSON).
+- `env`: Target environment.
+
+
+### `list_namespaces`
+
+```python
+list_namespaces() -> None
+```
+
+
+List all namespaces in the lake.
+
+**Args:**
+- `output`: Write the result to this path instead of printing it. Only .json is supported (a JSON array of namespace names).
+- `env`: Target environment.
+
+
+### `list_tables`
+
+```python
+list_tables() -> None
+```
+
+
+List all tables in a namespace.
+
+**Args:**
+- `namespace`: The namespace whose tables are listed.
+- `output`: Write the result to this path instead of printing it. Only .json is supported (a JSON array of table names).
+- `env`: Target environment.
+
+
+### `overwrite_data`
+
+```python
+overwrite_data() -> None
+```
+
+
+Overwrite a table's data from a file, per-partition when the table is partitioned.
+
+The overwrite is per-partition when the table has partition columns: only the
+partitions present in the input file are replaced, and any other partitions are
+left untouched. Tables without partition columns are overwritten in full.
+
+**Args:**
+- `namespace`: The namespace where the table is located.
+- `table`: The name of the table to overwrite.
+- `input`: Path to the data file. The format is inferred from the extension\: .parquet, .csv or .json.
+- `check_hash`: Only overwrite partitions whose content hash changed (requires a hashed table).
+- `output`: Write the operation result (inserted rows, modified partitions, operation id) to this path. Only .json is supported.
+- `env`: Target environment.
+
+
+### `register`
+
+```python
+register(app: cyclopts.App) -> None
+```
+
+
+Mount the ``lake`` sub-app onto the root ``orbitra`` CLI.
+
+This is the callable referenced by the ``orbitra.cli.plugins`` entry point;
+the commons CLI invokes it with the root app at startup.
+
+**Args:**
+- `app`: The root cyclopts app provided by the commons CLI.
+
+### `run_query`
+
+```python
+run_query() -> None
+```
+
+
+Run a SQL query against a namespace and return the result.
+
+**Args:**
+- `namespace`: The namespace to run the query in.
+- `query`: The SQL query to execute.
+- `engine`: The query engine to use\: "local" (default) or "remote".
+- `limit`: Truncate the result to at most this many rows (applied after the query runs). If omitted, all rows are returned.
+- `output`: Write the result to this path instead of printing it. The format is inferred from the extension\: .parquet, .csv or .json.
+- `env`: Target environment.
+
+
+### `upload_bytes_to_raw`
+
+```python
+upload_bytes_to_raw() -> None
+```
+
+
+Upload a file's bytes to raw blob storage, unchanged.
+
+**Args:**
+- `namespace`: Namespace used to compose the raw storage container.
+- `input`: Path to the local file whose bytes are uploaded.
+- `dest`: Destination blob path within the container, e.g. "finance/2025/report.pdf".
+- `env`: Target environment.
+
+

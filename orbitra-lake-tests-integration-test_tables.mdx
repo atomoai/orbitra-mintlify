@@ -1,0 +1,43 @@
+---
+title: test_tables
+sidebarTitle: test_tables
+---
+
+# `orbitra.lake.tests.integration.test_tables`
+
+## Classes
+
+### `TestTablesIntegration`
+
+
+Integration tests for table operations against a real backend.
+
+
+**Methods:**
+
+#### `test_add_or_update_table_deprecation_warning`
+
+```python
+test_add_or_update_table_deprecation_warning(self)
+```
+
+Override: __file__ assertion must point to this file, not the parent.
+
+#### `test_list_namespaces`
+
+```python
+test_list_namespaces(self, snapshot: Snapshot)
+```
+
+Override: real backend namespaces can change, just check ours is present.
+
+
+#### `test_list_tables`
+
+```python
+test_list_tables(self, snapshot: Snapshot)
+```
+
+Override: real backend tables can change, just check ours are present.
+
+

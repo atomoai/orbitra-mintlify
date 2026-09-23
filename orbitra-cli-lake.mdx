@@ -1,0 +1,304 @@
+---
+title: lake
+sidebarTitle: lake
+---
+
+# `orbitra lake`
+
+Commands provided by the `orbitra-lake` plugin.
+
+## Commands
+
+### `orbitra lake create-or-update-table`
+
+```bash
+orbitra lake create-or-update-table [OPTIONS]
+```
+
+Create a table, or reconcile an existing one to a schema (no-op if already matching).
+
+Creates the table when it does not exist. When it already exists, the schema is
+reconciled to match\: columns are added, removed (with --allow-column-removal) or
+retyped as needed. If the existing table already matches the given schema (and the
+--include-hash setting), nothing is changed and the current schema is returned.
+Partition columns cannot change — attempting to alter them is an error.
+
+**Options:**
+
+<div className="cli-table">
+
+| Flag | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| `--namespace` | `str` | yes |  | The namespace where the table lives (or will be created). |
+| `--schema` | `str` | yes |  | The table schema as a JSON object, identical to the lake-api TableSchema payload. It has "name" (str) and "columns" (a list of objects with "name", "type" and optional "kind"/"exclude_from_hash"). Allowed "type"\: "string", "int", "long", "float", "double", "boolean", "timestamp", "date". Allowed "kind"\: "partition" or "regular" (default). |
+| `--allow-column-removal` | `bool` | no | `False` | Allow removing columns absent from the schema when updating an existing table. |
+| `--include-hash` | `bool` | no | `False` | Add the __orbitra_hash__ column for content-based change detection. |
+| `--env` | `str` | no | `'prod'` | Target environment. |
+
+</div>
+
+**Examples:**
+
+```bash
+orbitra lake create-or-update-table --namespace <namespace> --schema '{"name": "my_table", "columns": [{"name": "id", "type": "long"}, {"name": "dt", "type": "date", "kind": "partition"}]}'
+```
+
+```bash
+orbitra lake create-or-update-table --namespace finance --schema '{"name": "my_table", "columns": [{"name": "id", "type": "long"}, {"name": "dt", "type": "date", "kind": "partition"}]}' --allow-column-removal
+```
+
+### `orbitra lake download-bytes-from-raw`
+
+```bash
+orbitra lake download-bytes-from-raw [OPTIONS]
+```
+
+Download a raw blob's bytes to a local file, unchanged.
+
+**Options:**
+
+<div className="cli-table">
+
+| Flag | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| `--namespace` | `str` | yes |  | Namespace used to compose the raw storage container. |
+| `--name` | `str` | yes |  | The blob path within the container to read. |
+| `--output` | `str` | yes |  | Local path to write the downloaded bytes to. |
+| `--env` | `str` | no | `'prod'` | Target environment. |
+
+</div>
+
+**Examples:**
+
+```bash
+orbitra lake download-bytes-from-raw --namespace <namespace> --name "finance/2025/report.pdf" --output <output>
+```
+
+```bash
+orbitra lake download-bytes-from-raw --namespace finance --name "finance/2025/report.pdf" --output ./output.json --env dev
+```
+
+### `orbitra lake get-data`
+
+```bash
+orbitra lake get-data [OPTIONS]
+```
+
+Read rows from a lake table, optionally filtered by column values.
+
+**Options:**
+
+<div className="cli-table">
+
+| Flag | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| `--namespace` | `str` | yes |  | The namespace where the table is located. |
+| `--table` | `str` | yes |  | The name of the table to read from. |
+| `--filter` | `str` | no | `None` | A JSON array of column filters, identical to the lake-api query payload. Each item is an object with "column", "op" and "value". Allowed "op"\: "==", ">", ">=", "\<", "\<=", "in" (for "in", "value" must be a JSON list). Value types are read from the JSON as-is (numbers, booleans, strings, lists); filters are combined with AND. |
+| `--select` | `list` | no | `None` | Columns to project from the table. If omitted, all columns are returned. Restricting the projection to the columns you need is the recommended way to read subsets of wide tables. Repeat the flag or pass several names\: --select col_a --select col_b. |
+| `--limit` | `int` | no | `None` | Maximum number of rows to return. If omitted, all rows are returned. |
+| `--output` | `str` | no | `None` | Write the result to this path instead of printing it. The format is inferred from the extension\: .parquet, .csv or .json. |
+| `--env` | `str` | no | `'prod'` | Target environment. |
+
+</div>
+
+**Examples:**
+
+```bash
+orbitra lake get-data --namespace <namespace> --table <table>
+```
+
+```bash
+orbitra lake get-data --namespace finance --table daily_prices --filter '[{"column": "DT_COMPTC", "op": ">=", "value": "2025-01-01"}, {"column": "NR_COTST", "op": "in", "value": [10, 40]}]' --select close_price --limit 100 --output ./output.json
+```
+
+### `orbitra lake get-table-metadata`
+
+```bash
+orbitra lake get-table-metadata [OPTIONS]
+```
+
+Show a table's schema (columns, types, partitioning).
+
+**Options:**
+
+<div className="cli-table">
+
+| Flag | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| `--namespace` | `str` | yes |  | The namespace where the table is located. |
+| `--table` | `str` | yes |  | The name of the table. |
+| `--output` | `str` | no | `None` | Write the schema to this path instead of printing it. Only .json is supported (the TableSchema as JSON). |
+| `--env` | `str` | no | `'prod'` | Target environment. |
+
+</div>
+
+**Examples:**
+
+```bash
+orbitra lake get-table-metadata --namespace <namespace> --table <table>
+```
+
+```bash
+orbitra lake get-table-metadata --namespace finance --table daily_prices --output ./output.json
+```
+
+### `orbitra lake list-namespaces`
+
+```bash
+orbitra lake list-namespaces [OPTIONS]
+```
+
+List all namespaces in the lake.
+
+**Options:**
+
+<div className="cli-table">
+
+| Flag | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| `--output` | `str` | no | `None` | Write the result to this path instead of printing it. Only .json is supported (a JSON array of namespace names). |
+| `--env` | `str` | no | `'prod'` | Target environment. |
+
+</div>
+
+**Examples:**
+
+```bash
+orbitra lake list-namespaces
+```
+
+```bash
+orbitra lake list-namespaces --output ./output.json
+```
+
+### `orbitra lake list-tables`
+
+```bash
+orbitra lake list-tables [OPTIONS]
+```
+
+List all tables in a namespace.
+
+**Options:**
+
+<div className="cli-table">
+
+| Flag | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| `--namespace` | `str` | yes |  | The namespace whose tables are listed. |
+| `--output` | `str` | no | `None` | Write the result to this path instead of printing it. Only .json is supported (a JSON array of table names). |
+| `--env` | `str` | no | `'prod'` | Target environment. |
+
+</div>
+
+**Examples:**
+
+```bash
+orbitra lake list-tables --namespace <namespace>
+```
+
+```bash
+orbitra lake list-tables --namespace finance --output ./output.json
+```
+
+### `orbitra lake overwrite-data`
+
+```bash
+orbitra lake overwrite-data [OPTIONS]
+```
+
+Overwrite a table's data from a file, per-partition when the table is partitioned.
+
+The overwrite is per-partition when the table has partition columns\: only the
+partitions present in the input file are replaced, and any other partitions are
+left untouched. Tables without partition columns are overwritten in full.
+
+**Options:**
+
+<div className="cli-table">
+
+| Flag | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| `--namespace` | `str` | yes |  | The namespace where the table is located. |
+| `--table` | `str` | yes |  | The name of the table to overwrite. |
+| `--input` | `str` | yes |  | Path to the data file. The format is inferred from the extension\: .parquet, .csv or .json. |
+| `--check-hash` | `bool` | no | `False` | Only overwrite partitions whose content hash changed (requires a hashed table). |
+| `--output` | `str` | no | `None` | Write the operation result (inserted rows, modified partitions, operation id) to this path. Only .json is supported. |
+| `--env` | `str` | no | `'prod'` | Target environment. |
+
+</div>
+
+**Examples:**
+
+```bash
+orbitra lake overwrite-data --namespace <namespace> --table <table> --input <input>
+```
+
+```bash
+orbitra lake overwrite-data --namespace finance --table daily_prices --input ./data.parquet --check-hash --output ./output.json
+```
+
+### `orbitra lake run-query`
+
+```bash
+orbitra lake run-query [OPTIONS]
+```
+
+Run a SQL query against a namespace and return the result.
+
+**Options:**
+
+<div className="cli-table">
+
+| Flag | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| `--namespace` | `str` | yes |  | The namespace to run the query in. |
+| `--query` | `str` | yes |  | The SQL query to execute. |
+| `--engine` | `Literal` | no | `'local'` | The query engine to use\: "local" (default) or "remote". |
+| `--limit` | `int` | no | `None` | Truncate the result to at most this many rows (applied after the query runs). If omitted, all rows are returned. |
+| `--output` | `str` | no | `None` | Write the result to this path instead of printing it. The format is inferred from the extension\: .parquet, .csv or .json. |
+| `--env` | `str` | no | `'prod'` | Target environment. |
+
+</div>
+
+**Examples:**
+
+```bash
+orbitra lake run-query --namespace <namespace> --query <query>
+```
+
+```bash
+orbitra lake run-query --namespace finance --query "SELECT * FROM daily_prices LIMIT 10" --engine remote --limit 100 --output ./output.json
+```
+
+### `orbitra lake upload-bytes-to-raw`
+
+```bash
+orbitra lake upload-bytes-to-raw [OPTIONS]
+```
+
+Upload a file's bytes to raw blob storage, unchanged.
+
+**Options:**
+
+<div className="cli-table">
+
+| Flag | Type | Required | Default | Description |
+| --- | --- | --- | --- | --- |
+| `--namespace` | `str` | yes |  | Namespace used to compose the raw storage container. |
+| `--input` | `str` | yes |  | Path to the local file whose bytes are uploaded. |
+| `--dest` | `str` | yes |  | Destination blob path within the container. |
+| `--env` | `str` | no | `'prod'` | Target environment. |
+
+</div>
+
+**Examples:**
+
+```bash
+orbitra lake upload-bytes-to-raw --namespace <namespace> --input <input> --dest "finance/2025/report.pdf"
+```
+
+```bash
+orbitra lake upload-bytes-to-raw --namespace finance --input ./data.parquet --dest "finance/2025/report.pdf" --env dev
+```

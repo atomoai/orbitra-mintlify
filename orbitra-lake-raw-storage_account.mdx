@@ -1,0 +1,70 @@
+---
+title: storage_account
+sidebarTitle: storage_account
+---
+
+# `orbitra.lake.raw.storage_account`
+
+## Classes
+
+### `StorageAccountRawProvider`
+
+
+Azure Blob Storage implementation of BaseRawProvider.
+
+This provider persists pandas DataFrames as Parquet files directly
+into an Azure Blob Storage container. It requires a valid Azure
+`TokenCredential` for authentication and Orbitra Lake settings to
+resolve the target account. The container name is provided per
+operation (read/write).
+
+**Attributes:**
+- `settings`: Orbitra Lake configuration containing
+the storage account URL.
+- `Credential`: Azure credential used to authenticate
+against the Blob Storage account.
+
+
+**Methods:**
+
+#### `get_processed_flag`
+
+```python
+get_processed_flag(self, full_filename: str, namespace: str) -> bool
+```
+#### `get_raw_file_system`
+
+```python
+get_raw_file_system(self, namespace: str) -> AbstractFileSystem
+```
+
+#### `read_raw_bytes_from_blob`
+
+```python
+read_raw_bytes_from_blob(self, full_filename: str, namespace: str) -> io.BytesIO
+```
+
+#### `read_raw_df_from_blob`
+
+```python
+read_raw_df_from_blob(self, full_filename: str, namespace: str) -> pd.DataFrame
+```
+
+#### `save_raw_bytes_to_blob`
+
+```python
+save_raw_bytes_to_blob(self, bytes_io: io.BytesIO, full_filename: str, namespace: str) -> bool
+```
+
+#### `save_raw_df_to_blob`
+
+```python
+save_raw_df_to_blob(self, df: pd.DataFrame, full_filename: str, namespace: str) -> bool
+```
+
+#### `set_processed_flag`
+
+```python
+set_processed_flag(self, full_filename: str, namespace: str, is_processed: bool) -> None
+```
+

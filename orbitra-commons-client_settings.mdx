@@ -1,0 +1,146 @@
+---
+title: client_settings
+sidebarTitle: client_settings
+---
+
+# `orbitra.commons.client_settings`
+
+## Functions
+
+### `get_available_environments`
+
+```python
+get_available_environments() -> list[str]
+```
+
+
+Get the list of available environment names from the Orbitra settings source.
+
+**Returns:**
+- list\[str]: A sorted list of available environment names.
+
+
+### `get_client_settings`
+
+```python
+get_client_settings(environment: str = 'prod', resolve_secrets: bool = True) -> ClientSettings
+```
+
+
+Get the client settings for the Orbitra application.
+
+**Args:**
+- `environment`: The environment to load the settings for.
+- `resolve_secrets`: Whether to read secret references from Key Vault. Resolution needs a
+credential, so it may prompt for an interactive login. Pass ``False`` when the caller only
+reads settings that can never be a reference, such as the tenant and the CLI client id;
+any reference then keeps its literal ``orbitra-secret\://`` text instead of its value.
+
+**Returns:**
+- An instance of ClientSettings with the configured values.
+
+
+## Classes
+
+### `PublishedSettings`
+
+
+Settings the platform publishes on the public, unauthenticated settings URL.
+
+Only these fields may be populated by ``SDKSettingsSource``; any other key in the payload is ignored.
+
+
+### `PrivateSettings`
+
+
+Settings supplied locally through init, env vars, ``.env``, ``pyproject.toml`` or secrets, never the settings URL.
+
+
+### `SDKSettingsSource`
+
+
+Loads settings from the Orbitra SDK settings plugin (remote URL or entry point).
+
+
+**Methods:**
+
+#### `get_field_value`
+
+```python
+get_field_value(self, field: FieldInfo, field_name: str) -> tuple[Any, str, bool]
+```
+
+Get the value of a field from the SDK settings.
+
+**Args:**
+- `field`: The field to get the value for.
+- `field_name`: The name of the field to get the value for.
+
+**Returns:**
+- tuple\[Any, str, bool]: The value of the field, the name of the field, and a boolean indicating if the field is required.
+Fields not declared in ``PublishedSettings`` always resolve to ``None``.
+
+
+### `ClientSettings`
+
+
+Client settings for the Orbitra application.
+
+This class is used to manage configuration settings for the client.
+
+
+**Methods:**
+
+#### `get_extra`
+
+```python
+get_extra(self, name: str) -> Any
+```
+
+Read a configured extra by case-insensitive name.
+
+**Args:**
+- `name`: Name of a setting not declared as a ClientSettings field.
+
+**Returns:**
+- The resolved secret text or the literal value supplied by a source.
+
+**Raises:**
+- `KeyError`: If the extra is missing or the name denotes a declared field.
+
+
+#### `orbitra_authority`
+
+```python
+orbitra_authority(self) -> str
+```
+
+Return the authority domain for the application.
+
+
+#### `orbitra_client_id`
+
+```python
+orbitra_client_id(self) -> str
+```
+
+Return the client ID for the application.
+
+
+#### `orbitra_token_issuer`
+
+```python
+orbitra_token_issuer(self) -> list[str]
+```
+
+Return the token issuer domain for the application.
+
+#### `settings_customise_sources`
+
+```python
+settings_customise_sources(cls, settings_cls: type[BaseSettings], init_settings: PydanticBaseSettingsSource, env_settings: PydanticBaseSettingsSource, dotenv_settings: PydanticBaseSettingsSource, file_secret_settings: PydanticBaseSettingsSource) -> tuple[PydanticBaseSettingsSource, ...]
+```
+
+Customise the settings sources for the client settings.
+
+

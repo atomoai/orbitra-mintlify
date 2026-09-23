@@ -1,0 +1,92 @@
+---
+title: cli
+sidebarTitle: cli
+---
+
+# `orbitra.flows.cli`
+
+
+Orbitra Flows CLI plugin.
+
+Registers the ``orbitra flows`` sub-app on the root ``orbitra`` CLI (defined in
+``orbitra-commons``) via the ``orbitra.cli.plugins`` entry point group. The
+commons SDK discovers and mounts this sub-app at runtime, so the dependency
+direction (``commons`` <- ``flows``) is preserved: commons never imports flows.
+
+Prefect (and the flows client) are imported lazily inside each command body so
+that merely *registering* the plugin does not pull Prefect into the process.
+The commons CLI calls :func:`register` for every plugin at startup, so an eager
+import here would load Prefect — and print its telemetry banner — even for
+unrelated commands such as ``orbitra account show``.
+
+
+## Functions
+
+### `logs`
+
+```python
+logs() -> None
+```
+
+
+Read the logs emitted by a flow run, ordered oldest to newest.
+
+**Args:**
+- `run_id`: The ID of the flow run to read logs for.
+- `limit`: The maximum number of log records to return. If omitted, returns all logs.
+- `output_json`: Print the logs as machine-readable JSON to stdout instead of a table.
+- `env`: Target environment.
+
+
+### `register`
+
+```python
+register(app: cyclopts.App) -> None
+```
+
+
+Mount the ``flows`` sub-app onto the root ``orbitra`` CLI.
+
+This is the callable referenced by the ``orbitra.cli.plugins`` entry point;
+the commons CLI invokes it with the root app at startup.
+
+**Args:**
+- `app`: The root cyclopts app provided by the commons CLI.
+
+### `run`
+
+```python
+run() -> None
+```
+
+
+Trigger a Prefect deployment, optionally waiting for it to finish.
+
+**Args:**
+- `deployment`: The deployment to run, in the format "&lt;FLOW_NAME&gt;/&lt;DEPLOYMENT_NAME&gt;".
+- `parameters`: A JSON object of parameters to pass to the flow run, identical to the dict the flows
+client forwards. Value types are read from the JSON as-is (numbers, booleans, strings, lists, objects).
+Sample\: --parameters '{"date"\: "2025-01-01", "limit"\: 100, "dry_run"\: true}'
+- `wait`: Wait for the flow run to reach a terminal state and render its final state.
+- `timeout`: When waiting, the maximum number of seconds to wait before giving up. If omitted, waits indefinitely.
+- `poll_interval`: When waiting, the number of seconds between polling attempts.
+- `output_json`: Print machine-readable JSON to stdout instead of a table. Without --wait, prints
+{"id"\: "&lt;run-id&gt;"}; with --wait, prints the full flow run.
+- `env`: Target environment.
+
+
+### `status`
+
+```python
+status() -> None
+```
+
+
+Read the current state of a flow run.
+
+**Args:**
+- `run_id`: The ID of the flow run to inspect.
+- `output_json`: Print the flow run as machine-readable JSON to stdout instead of a table.
+- `env`: Target environment.
+
+
