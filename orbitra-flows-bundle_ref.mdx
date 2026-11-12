@@ -1,0 +1,101 @@
+---
+title: bundle_ref
+sidebarTitle: bundle_ref
+---
+
+# `orbitra.flows.bundle_ref`
+
+
+Where a flow's code bundle lives and what it is called.
+
+## Functions
+
+### `bundle_location`
+
+```python
+bundle_location(pool: Any) -> tuple[str, str]
+```
+
+
+The storage account and container an orbitra-process pool's workers read bundles from.
+
+
+### `first_line`
+
+```python
+first_line(text: str) -> str
+```
+
+
+The first line of a (possibly multi-line) error message.
+
+
+### `parse_bundle`
+
+```python
+parse_bundle(value: str) -> tuple[str, str]
+```
+
+
+Split ``<repo>/<sha256>`` into its two validated parts.
+
+
+### `validate_bundle`
+
+```python
+validate_bundle(repo: str, sha256: str) -> None
+```
+
+
+Reject names that are not a plain repository name and a lowercase SHA-256.
+
+
+### `validate_location`
+
+```python
+validate_location(storage_account: object, container: object) -> None
+```
+
+
+Reject anything but a storage account name and a blob container name.
+
+
+## Classes
+
+### `BundleError`
+
+
+A bundle could not be named, fetched, verified or unpacked.
+
+
+### `BundleRef`
+
+
+A bundle in a storage account's container.
+
+
+**Methods:**
+
+#### `account_url`
+
+```python
+account_url(self) -> str
+```
+
+#### `blob_name`
+
+```python
+blob_name(self) -> str
+```
+
+#### `manifest_name`
+
+```python
+manifest_name(self) -> str
+```
+
+#### `url`
+
+```python
+url(self) -> str
+```

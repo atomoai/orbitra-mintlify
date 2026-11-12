@@ -1,0 +1,1264 @@
+---
+title: test_policy_reconcile
+sidebarTitle: test_policy_reconcile
+---
+
+# `orbitra.lake.tests.lake.test_policy_reconcile`
+
+
+Reconciliation of row filters and column masks in create_table, create_or_update_table and drop_table.
+
+The Iceberg side is the local catalog; the Unity Catalog REST API is an in-memory fake.
+
+
+## Functions
+
+### `service`
+
+```python
+service(tmp_path, monkeypatch) -> Iterator[DBService]
+```
+
+
+A DBService on the local catalog with a fake Unity Catalog, and the namespace created.
+
+
+## Classes
+
+### `TestTableSchema`
+
+
+A TableSchema never reads or changes policies, and refuses the schema changes that would change them.
+
+
+**Methods:**
+
+#### `test_mixed_case_table_name`
+
+```python
+test_mixed_case_table_name(self)
+```
+
+Test that a mixed-case name finds the table that Unity Catalog lists in lowercase, so it is not created again.
+
+
+#### `test_other_commit_errors_are_raised_as_they_are`
+
+```python
+test_other_commit_errors_are_raised_as_they_are(self, service: DBService, monkeypatch)
+```
+
+Test that another CommitStateUnknownException is not translated.
+
+
+#### `test_policies_stay_as_they_are`
+
+```python
+test_policies_stay_as_they_are(self, service: DBService)
+```
+
+Test that a TableSchema update (a description, a new column) leaves the applied policies as they are, with no call.
+
+
+#### `test_removing_a_column_with_a_policy_is_refused`
+
+```python
+test_removing_a_column_with_a_policy_is_refused(self, service: DBService, path: str)
+```
+
+Test that Unity Catalog's refusal to remove a tagged column (ErrorCode 2012) becomes LakePolicyError, and nothing changes.
+
+
+#### `test_retype_of_a_masked_column_keeps_its_mask`
+
+```python
+test_retype_of_a_masked_column_keeps_its_mask(self, service: DBService)
+```
+
+Test that a TableSchema retypes a masked column with no lock; the policy keeps the old UDF until a declaration moves it.
+
+
+#### `test_table_schema_adds_the_hash_to_a_table_without_policies`
+
+```python
+test_table_schema_adds_the_hash_to_a_table_without_policies(self, service: DBService)
+```
+
+Test that a writer adds __orbitra_hash__ to a table without policies, with no lock and no policy write.
+
+
+#### `test_table_schema_cannot_add_the_hash_to_a_table_with_policies`
+
+```python
+test_table_schema_cannot_add_the_hash_to_a_table_with_policies(self, service: DBService)
+```
+
+Test that a TableSchema adding __orbitra_hash__ to a table with Orbitra tags is refused, with no lock and no write.
+
+
+#### `test_table_schema_creates_a_table_with_the_hash`
+
+```python
+test_table_schema_creates_a_table_with_the_hash(self, service: DBService)
+```
+
+Test that creating a table with the hash through a TableSchema reads no policy: the one call is the owner PATCH.
+
+
+#### `test_the_refusal_is_not_retried`
+
+```python
+test_the_refusal_is_not_retried(self, service: DBService, monkeypatch)
+```
+
+Test that the refusal of Unity Catalog is final: the SDK tries the removal once.
+
+
+#### `test_writer_removes_and_retypes_untagged_columns`
+
+```python
+test_writer_removes_and_retypes_untagged_columns(self, service: DBService)
+```
+
+Test that a writer removes and retypes columns without policies through a TableSchema, with no lock and no policy read.
+
+
+#### `test_zero_policy_calls`
+
+```python
+test_zero_policy_calls(self, service: DBService)
+```
+
+Test that a create makes one Unity Catalog call, the owner PATCH, and an update, a no-op update and metadata make none.
+
+
+### `TestCompleteDeclaration`
+
+
+TableSchemaWithPolicies is the complete declaration: an omitted policy is an error, and tombstones remove.
+
+
+**Methods:**
+
+#### `test_create_applies_everything`
+
+```python
+test_create_applies_everything(self, service: DBService)
+```
+
+Test the tags, UDFs and policies after a create, and that the table is readable.
+
+
+#### `test_create_order`
+
+```python
+test_create_order(self, service: DBService)
+```
+
+Test the order of a create: the table goes to the manager group, then tags, then UDFs, then policies.
+
+
+#### `test_deleted_udf_and_tag_are_recreated`
+
+```python
+test_deleted_udf_and_tag_are_recreated(self, service: DBService)
+```
+
+Test that a UDF deleted outside the SDK and an unset tag come back on the next run.
+
+
+#### `test_equal_declaration_writes_nothing_and_takes_no_lock`
+
+```python
+test_equal_declaration_writes_nothing_and_takes_no_lock(self, service: DBService)
+```
+
+Test that applying the same declaration again makes no write and takes no lock.
+
+
+#### `test_include_policies_round_trip`
+
+```python
+test_include_policies_round_trip(self, service: DBService)
+```
+
+Test that get_table_metadata(include_policies=True) returns the declaration as a TableSchemaWithPolicies, which applies with no write.
+
+
+#### `test_mixed_case_column_names`
+
+```python
+test_mixed_case_column_names(self, service: DBService)
+```
+
+Test that tags use the column name as Unity Catalog stores it, so mixed-case columns get their masks and filter.
+
+
+#### `test_new_column_is_added_before_its_tag`
+
+```python
+test_new_column_is_added_before_its_tag(self, service: DBService)
+```
+
+Test that a new masked column exists before the tag is set on it.
+
+
+#### `test_omitted_filter_is_refused`
+
+```python
+test_omitted_filter_is_refused(self, service: DBService)
+```
+
+Test that row_filter=None on a table with an Orbitra filter raises before any write.
+
+
+#### `test_omitted_mask_is_refused`
+
+```python
+test_omitted_mask_is_refused(self, service: DBService)
+```
+
+Test that mask=None on a column with an Orbitra mask raises before any write, with the two ways out.
+
+
+#### `test_tombstones_on_a_new_table_write_nothing`
+
+```python
+test_tombstones_on_a_new_table_write_nothing(self, service: DBService)
+```
+
+Test that only removal forms on a new table take no lock and write no policy: the one write gives the table to the manager group.
+
+
+#### `test_tombstones_remove_only_orbitra_objects`
+
+```python
+test_tombstones_remove_only_orbitra_objects(self, service: DBService)
+```
+
+Test that action none and access=[] remove the Orbitra policies, tags and filter UDF, and keep the client policy.
+
+
+### `TestUdfOwner`
+
+
+The namespace manager group owns every UDF of the declaration; a call that writes fixes another owner.
+
+
+**Methods:**
+
+#### `test_a_call_that_writes_fixes_the_owner_of_an_existing_udf`
+
+```python
+test_a_call_that_writes_fixes_the_owner_of_an_existing_udf(self, service: DBService)
+```
+
+Test that an existing equal UDF with another owner goes to the group on the next call that writes, and only that UDF.
+
+
+#### `test_a_run_that_stopped_before_the_owner_patch_is_fixed_on_re_apply`
+
+```python
+test_a_run_that_stopped_before_the_owner_patch_is_fixed_on_re_apply(self, service: DBService)
+```
+
+Test a run that created a UDF and stopped before its owner PATCH: the re-apply gives it to the group.
+
+
+#### `test_another_owner_alone_takes_no_lock`
+
+```python
+test_another_owner_alone_takes_no_lock(self, service: DBService)
+```
+
+Test that another owner is not a difference: an equal declaration writes nothing and takes no lock.
+
+
+#### `test_the_udf_owner_is_the_published_manager_group`
+
+```python
+test_the_udf_owner_is_the_published_manager_group(self, service: DBService, monkeypatch: pytest.MonkeyPatch)
+```
+
+Test that new and existing UDFs go to the published manager group, never to the current schema owner.
+
+The access check is disabled here, so that the call reaches ``apply_additions`` with a schema that another principal owns.
+
+
+#### `test_udfs_with_the_right_owner_get_no_patch`
+
+```python
+test_udfs_with_the_right_owner_get_no_patch(self, service: DBService)
+```
+
+Test that a call that writes sends no owner PATCH for the existing UDFs that the group owns.
+
+
+### `TestManagerCheck`
+
+
+The lock POST is the manager check: a caller without CREATE FUNCTION on the schema gets a 403 before any change.
+
+
+**Methods:**
+
+#### `test_no_manager_check_by_group_membership`
+
+```python
+test_no_manager_check_by_group_membership(self)
+```
+
+Test that the SCIM, owners and MANAGE grant check is gone: the lock POST decides.
+
+
+#### `test_non_manager_cannot_create`
+
+```python
+test_non_manager_cannot_create(self, service: DBService)
+```
+
+Test that a caller outside the manager group cannot create a table with a declaration, and nothing is created.
+
+
+#### `test_writer_gets_the_manager_error_before_a_check_error`
+
+```python
+test_writer_gets_the_manager_error_before_a_check_error(self, service: DBService)
+```
+
+Test that a declaration that fails a check (an omitted mask) gives a writer the manager error first.
+
+
+#### `test_writer_with_different_declaration_changes_nothing`
+
+```python
+test_writer_with_different_declaration_changes_nothing(self, service: DBService)
+```
+
+Test that a writer with a different declaration gets the manager error from the lock POST, before any change.
+
+
+#### `test_writer_with_equal_declaration_succeeds`
+
+```python
+test_writer_with_equal_declaration_succeeds(self, service: DBService)
+```
+
+Test that a writer applies the same declaration and adds a column, with no policy write and no lock.
+
+
+### `TestOneChangePerCall`
+
+
+At most one change to an existing policy per call; new policies and removals are free.
+
+
+**Methods:**
+
+#### `test_a_failed_change_keeps_the_old_policy`
+
+```python
+test_a_failed_change_keeps_the_old_policy(self, service: DBService)
+```
+
+Test that the one change whose PATCH fails leaves that policy on the old function, and the table readable.
+
+
+#### `test_an_old_exempt_list_moves_on_an_equal_declaration`
+
+```python
+test_an_old_exempt_list_moves_on_an_equal_declaration(self, service: DBService)
+```
+
+Test that the re-apply of the same declaration moves an old exempt list too (a write, under the lock).
+
+
+#### `test_an_old_exempt_list_moves_to_the_exempt_groups`
+
+```python
+test_an_old_exempt_list_moves_to_the_exempt_groups(self, service: DBService)
+```
+
+Test that policies whose except_principals hold the old list (owners, users) move to the exempt groups next to one other change.
+
+Removing a principal from except_principals only adds protection, so the move does not count: the call that also
+changes the filter succeeds, and every policy ends with exactly the exempt groups and its except_groups.
+
+
+#### `test_except_groups_change_counts`
+
+```python
+test_except_groups_change_counts(self, service: DBService)
+```
+
+Test that new except_groups on a mask count as a change: with a filter change, the call is refused.
+
+
+#### `test_new_policies_and_removals_are_free`
+
+```python
+test_new_policies_and_removals_are_free(self, service: DBService)
+```
+
+Test that one call can add masks, remove masks and change one existing policy, in the order additions, change, removals.
+
+
+#### `test_no_write_order_machinery`
+
+```python
+test_no_write_order_machinery(self)
+```
+
+Test that the narrow/widen split and the swap counting are gone: the plan has one change slot.
+
+
+#### `test_removed_except_groups_do_not_count`
+
+```python
+test_removed_except_groups_do_not_count(self, service: DBService)
+```
+
+Test that removing an except_groups entry only adds protection: it shares a call with a filter change.
+
+
+#### `test_selector_change_counts`
+
+```python
+test_selector_change_counts(self, service: DBService)
+```
+
+Test bohr's thread 15513 finding 1: the filter moves from regiao to regiao2 (same UDF, other match_columns) with a mask change.
+
+The UDF name does not change, so a rule that compared only the UDF accepted it, and a failure between the PATCHes left
+the new mask with the old filter. Now the selector counts, and the call is refused before any write.
+
+
+#### `test_two_calls_apply_the_same_change`
+
+```python
+test_two_calls_apply_the_same_change(self, service: DBService)
+```
+
+Test that the same change applied in two calls, one change each, works.
+
+
+#### `test_two_function_changes_are_refused`
+
+```python
+test_two_function_changes_are_refused(self, service: DBService)
+```
+
+Test that a mask action change and a filter rule change in one call raise before any write.
+
+
+#### `test_udf_version_move_does_not_count`
+
+```python
+test_udf_version_move_does_not_count(self, service: DBService, monkeypatch)
+```
+
+Test that a new mask body (a new SDK release) moves every policy of that action and type, next to one other change.
+
+
+### `TestHashWithPolicies`
+
+
+The Orbitra hash cannot be used on tables with access policies.
+
+
+**Methods:**
+
+#### `test_a_failed_write_still_reports_the_hash`
+
+```python
+test_a_failed_write_still_reports_the_hash(self, service: DBService, monkeypatch)
+```
+
+Test bohr's thread 15563 finding 2: a writer adds the hash after the manager's check; the manager's second POST fails.
+
+The manager applied the first mask; the hash check also runs on the error exit, under the lock, and keeps the
+failure as its cause.
+
+
+#### `test_a_failing_later_step_cannot_skip_the_undo`
+
+```python
+test_a_failing_later_step_cannot_skip_the_undo(self, service: DBService, monkeypatch)
+```
+
+Test bohr's thread 15561 finding: the writer adds the hash and also removes documento, which the manager masked meanwhile.
+
+Unity Catalog would refuse the removal (ErrorCode 2012) after the hash add. The second tag read runs right after the
+add, before the removal, so the hash goes again and the removal is never tried.
+
+
+#### `test_a_hash_added_during_the_call_is_reported`
+
+```python
+test_a_hash_added_during_the_call_is_reported(self, service: DBService, monkeypatch)
+```
+
+Test bohr's thread 15557 finding 1 (concurrency): a writer adds the hash while a manager applies the first mask.
+
+The writer's call reads no Orbitra tag yet and adds the hash; the manager's call, under the lock, reads the
+schema again after its writes and fails loud. The SDK does not drop the column: a manager must.
+
+
+#### `test_a_policy_applied_during_the_hash_add_undoes_it`
+
+```python
+test_a_policy_applied_during_the_hash_add_undoes_it(self, service: DBService, monkeypatch)
+```
+
+Test bohr's thread 15559 finding: a manager applies the first mask between the writer's tag read and its hash add.
+
+The manager's check after its writes sees no hash yet. The writer reads the tags again after the add, drops the
+hash it added, and fails loud; the manager's mask stays.
+
+
+#### `test_a_table_with_the_hash_is_refused_before_any_write`
+
+```python
+test_a_table_with_the_hash_is_refused_before_any_write(self, service: DBService)
+```
+
+Test that a TableSchemaWithPolicies on a table that has __orbitra_hash__ is refused before any write.
+
+
+#### `test_include_hash_is_refused_before_any_write`
+
+```python
+test_include_hash_is_refused_before_any_write(self, service: DBService)
+```
+
+Test that include_hash=True with a TableSchemaWithPolicies is refused before anything: on create, and on bohr's table.
+
+bohr's thread 15557 finding 1 (partial failure): a masked table without the hash, the same declaration with
+include_hash=True, and a failure on the tag POST left the hash unmasked. Now the call adds nothing.
+
+
+### `TestColumnChanges`
+
+
+Column removal and type change with policies.
+
+
+**Methods:**
+
+#### `test_direct_column_changes_take_no_lock`
+
+```python
+test_direct_column_changes_take_no_lock(self, service: DBService, operation: str)
+```
+
+Test that a direct column change does not wait for a held lock: it reads no policy state.
+
+
+#### `test_moving_the_filter_off_a_column_and_removing_it_needs_two_calls`
+
+```python
+test_moving_the_filter_off_a_column_and_removing_it_needs_two_calls(self, service: DBService)
+```
+
+Test that the filter moves to regiao2 in one call, and regiao goes in the next.
+
+
+#### `test_removing_a_tagged_column_needs_two_calls`
+
+```python
+test_removing_a_tagged_column_needs_two_calls(self, service: DBService)
+```
+
+Test that Unity Catalog refuses to remove a column with a governed tag, so the SDK asks for the policy first, then the column.
+
+
+#### `test_retype_and_another_change_are_refused`
+
+```python
+test_retype_and_another_change_are_refused(self, service: DBService)
+```
+
+Test that the mask move of a retype counts: with a filter change, the call is refused and the column keeps its type.
+
+
+#### `test_retype_moves_the_mask_to_the_new_type`
+
+```python
+test_retype_moves_the_mask_to_the_new_type(self, service: DBService)
+```
+
+Test that int -> long of a masked column retypes first, then moves the mask to the long UDF (the one change).
+
+
+#### `test_retype_of_a_filter_column_moves_the_filter`
+
+```python
+test_retype_of_a_filter_column_moves_the_filter(self, service: DBService)
+```
+
+Test that int -> long of a filter column gives the filter a new UDF with a BIGINT parameter, and deletes the old one.
+
+
+#### `test_unity_catalog_refuses_to_remove_a_tagged_column`
+
+```python
+test_unity_catalog_refuses_to_remove_a_tagged_column(self, service: DBService)
+```
+
+Test the fake against the dev finding: the backend call itself fails for a column with a governed tag.
+
+
+### `TestLockFirst`
+
+
+Every call that can change protection takes the lock first and decides only under it.
+
+
+**Methods:**
+
+#### `test_a_stale_declaration_is_refused_under_the_lock`
+
+```python
+test_a_stale_declaration_is_refused_under_the_lock(self, service: DBService, monkeypatch)
+```
+
+Test the slot race of two runs prepared together: B's declaration omits the mask that A applied, so B is refused.
+
+
+#### `test_create_table_takes_the_lock_before_the_create`
+
+```python
+test_create_table_takes_the_lock_before_the_create(self, service: DBService, monkeypatch)
+```
+
+Test that a run right after the physical create waits for the lock of the creating run.
+
+
+#### `test_create_without_policies_takes_no_lock`
+
+```python
+test_create_without_policies_takes_no_lock(self, service: DBService)
+```
+
+Test that a create without a policy (TableSchema, or every part None, hash included) takes no lock.
+
+
+#### `test_drop_table_waits_for_the_lock`
+
+```python
+test_drop_table_waits_for_the_lock(self, service: DBService)
+```
+
+Test that while a run holds the lock, drop_table does not drop the table.
+
+
+#### `test_lock_contention_raises_after_the_wait`
+
+```python
+test_lock_contention_raises_after_the_wait(self, service: DBService, monkeypatch)
+```
+
+Test that a run that cannot take the lock raises LakePolicyError and writes nothing.
+
+
+#### `test_lock_is_released_on_error`
+
+```python
+test_lock_is_released_on_error(self, service: DBService)
+```
+
+Test that a failure under the lock releases it, and the next run applies.
+
+
+#### `test_lock_only_for_calls_that_change`
+
+```python
+test_lock_only_for_calls_that_change(self, service: DBService)
+```
+
+Test that a call with writes takes and releases the lock around every write, and an equal call takes none.
+
+
+#### `test_old_lock_always_blocks`
+
+```python
+test_old_lock_always_blocks(self, service: DBService)
+```
+
+Test that a lock never expires by itself; an old one blocks, and the error says how to remove it.
+
+
+#### `test_release_keeps_a_lock_of_another_run`
+
+```python
+test_release_keeps_a_lock_of_another_run(self, service: DBService)
+```
+
+Test the remaining window: after a manual drop and a new holder, the old run's release does not delete the new lock.
+
+
+#### `test_second_holder_cannot_take_a_held_lock`
+
+```python
+test_second_holder_cannot_take_a_held_lock(self, service: DBService)
+```
+
+Test that while A holds the lock, B's acquire raises and A's lock stays; after A releases, B takes it.
+
+
+#### `test_tags_are_read_under_the_lock`
+
+```python
+test_tags_are_read_under_the_lock(self, service: DBService, monkeypatch, schema_class: str)
+```
+
+Test bohr's thread 15513 finding 2: B plans the removal of regiao2 (no tag); A filters on regiao2 before B takes the lock.
+
+B decides under the lock, so it sees the new tag and refuses; regiao2 stays and A's filter is intact.
+
+
+### `TestLockAnswers`
+
+
+The run recognizes its own lock by the holder id, whatever the answer of its POST was.
+
+
+**Methods:**
+
+#### `test_a_failed_confirmation_read_recovers`
+
+```python
+test_a_failed_confirmation_read_recovers(self, service: DBService, monkeypatch)
+```
+
+Test that a created lock whose confirmation read fails is recognized on the next attempt, and released at the end.
+
+
+#### `test_a_lock_create_whose_answer_is_lost_is_adopted`
+
+```python
+test_a_lock_create_whose_answer_is_lost_is_adopted(self, service: DBService, monkeypatch, lost: str)
+```
+
+Test Eduardo's thread 15675 finding: the POST creates the lock, but the answer is lost.
+
+A timeout or a lost connection raises; the 503 retry inside the transport then gets "already exists" for the
+run's own create. The run reads the comment, finds its id, holds the lock, applies, and releases it.
+
+
+#### `test_a_lock_of_another_holder_is_never_adopted`
+
+```python
+test_a_lock_of_another_holder_is_never_adopted(self, service: DBService, monkeypatch)
+```
+
+Test that a lock whose holder is another run id still blocks: the run waits and fails with the held message.
+
+
+#### `test_a_lock_that_cannot_be_taken_reports_the_error`
+
+```python
+test_a_lock_that_cannot_be_taken_reports_the_error(self, service: DBService, monkeypatch)
+```
+
+Test that a POST that fails every time, with no lock created, ends with that error, not with a blame on another run.
+
+
+### `TestCleanupFailures`
+
+
+A failure of a cleanup step (the lock release, the UDF of a dropped table, the hash check) never replaces the result.
+
+
+**Methods:**
+
+#### `test_a_failed_hash_check_keeps_the_original_error`
+
+```python
+test_a_failed_hash_check_keeps_the_original_error(self, service: DBService, monkeypatch, caplog)
+```
+
+Test that when the hash check on the error exit fails too, the caller gets the original error and the failure is logged.
+
+
+#### `test_a_release_timeout_after_a_successful_apply_is_only_logged`
+
+```python
+test_a_release_timeout_after_a_successful_apply_is_only_logged(self, service: DBService, caplog)
+```
+
+Test that a completed apply stays a success when the lock release times out; the lock stays for a manual drop.
+
+
+#### `test_a_release_timeout_keeps_the_original_error`
+
+```python
+test_a_release_timeout_keeps_the_original_error(self, service: DBService, caplog)
+```
+
+Test the review finding: an operation fails, then the lock release times out; the caller gets the operation's error.
+
+
+#### `test_a_timeout_on_the_udf_of_a_dropped_table_is_only_logged`
+
+```python
+test_a_timeout_on_the_udf_of_a_dropped_table_is_only_logged(self, service: DBService, caplog)
+```
+
+Test that drop_table succeeds when the deletion of its filter UDF times out: the table is already dropped.
+
+
+### `TestInlineCleanup`
+
+
+The old filter UDF goes right after the write that replaced it; mask UDFs are never deleted.
+
+
+**Methods:**
+
+#### `test_drop_table_deletes_its_filter_udf`
+
+```python
+test_drop_table_deletes_its_filter_udf(self, service: DBService)
+```
+
+Test that drop_table deletes the filter UDF of the table and keeps the shared mask UDFs.
+
+
+#### `test_filter_change_deletes_the_old_udf_right_after_the_patch`
+
+```python
+test_filter_change_deletes_the_old_udf_right_after_the_patch(self, service: DBService)
+```
+
+Test the order of a filter change: new UDF, PATCH, DELETE of the old UDF; no listing of the schema functions.
+
+
+#### `test_filter_tombstone_deletes_its_udf`
+
+```python
+test_filter_tombstone_deletes_its_udf(self, service: DBService)
+```
+
+Test that RowFilter(access=[]) deletes the filter policy, then its UDF.
+
+
+#### `test_no_code_path_deletes_a_mask_udf`
+
+```python
+test_no_code_path_deletes_a_mask_udf(self, service: DBService, monkeypatch)
+```
+
+Test create, action changes, a new mask body, removals and drop_table: no DELETE of a mask UDF.
+
+
+#### `test_no_gc_pass`
+
+```python
+test_no_gc_pass(self)
+```
+
+Test that the separate cleanup pass, its prefix listing and its grace logic are gone.
+
+
+#### `test_the_filter_udf_of_another_table_is_never_deleted`
+
+```python
+test_the_filter_udf_of_another_table_is_never_deleted(self, service: DBService)
+```
+
+Test bohr's thread 15565 finding: the filter policy of contratos is pointed by hand to the filter UDF of contratos_b.
+
+That policy is no longer recognized as the Orbitra filter of contratos, so the re-apply is refused before any write
+(the name collision of plan rule 7), and drop_table('contratos') does not delete the UDF of contratos_b.
+
+
+### `TestChecks`
+
+
+The checks before any write.
+
+
+**Methods:**
+
+#### `test_a_foreign_policy_on_an_orbitra_tag_keeps_its_tag`
+
+```python
+test_a_foreign_policy_on_an_orbitra_tag_keeps_its_tag(self, service: DBService)
+```
+
+Test bohr's thread 15567 finding: the mask on documento is changed by hand to call client_mask, with its Orbitra selector.
+
+The policy is no longer an Orbitra policy, but it still selects documento by orbitra_mask = 1. A declaration with
+every mask None and no tombstone must not remove that tag: it is refused before any write.
+
+
+#### `test_a_foreign_schema_policy_on_an_orbitra_tag_refuses_before_the_create`
+
+```python
+test_a_foreign_schema_policy_on_an_orbitra_tag_refuses_before_the_create(self, service: DBService)
+```
+
+Test bohr's thread 15569 finding: a schema policy that the SDK does not recognize selects orbitra_mask = 32.
+
+A new declaration with a mask on slot 1 must be refused before the table is created: no table, zero writes.
+
+
+#### `test_a_policy_is_not_moved_off_an_edited_mask_udf`
+
+```python
+test_a_policy_is_not_moved_off_an_edited_mask_udf(self, service: DBService, declared: str)
+```
+
+Test that a mask change or removal is refused with zero writes when the mask UDF that the policy calls was edited by hand.
+
+Mask UDFs are never deleted, but moving the policy off an edited UDF would hide the edit from the
+namespace manager in the same way.
+
+
+#### `test_a_policy_with_an_orbitra_name_is_not_overwritten`
+
+```python
+test_a_policy_with_an_orbitra_name_is_not_overwritten(self, service: DBService)
+```
+
+Test bohr's thread 15563 finding 1: the selector of an Orbitra mask is changed by hand to a client tag on regiao.
+
+The planner does not recognize the policy, so re-applying the mask on documento must not overwrite it: the call
+is refused before any write, and regiao keeps its mask.
+
+
+#### `test_an_edited_filter_udf_is_not_deleted_by_a_removal`
+
+```python
+test_an_edited_filter_udf_is_not_deleted_by_a_removal(self, service: DBService)
+```
+
+Test that ``RowFilter(access=[])`` is refused with zero writes when the current filter UDF was edited by hand.
+
+
+#### `test_an_edited_filter_udf_is_not_replaced`
+
+```python
+test_an_edited_filter_udf_is_not_replaced(self, service: DBService)
+```
+
+Test that a filter change is refused with zero writes when someone edited the current filter UDF (thread 15706).
+
+Sequence: create a table with a filter, set the body of its UDF to FALSE by hand (same name), then
+declare another access rule. The new rule gets a new UDF name, so only the check of the UDF to
+replace sees the edit. The edited UDF stays, and the policy still calls it.
+
+
+#### `test_an_unedited_filter_udf_is_still_replaced`
+
+```python
+test_an_unedited_filter_udf_is_still_replaced(self, service: DBService)
+```
+
+Test that a filter change replaces and deletes the old filter UDF when it still matches the hash in its name.
+
+
+#### `test_checks_run_before_the_table_is_created`
+
+```python
+test_checks_run_before_the_table_is_created(self, service: DBService, problem: str)
+```
+
+Test that the checks that do not need the table refuse before the physical create: no table is left behind.
+
+
+#### `test_classic_filter_conflicts`
+
+```python
+test_classic_filter_conflicts(self, service: DBService)
+```
+
+Test that a classic row filter on the table blocks the declaration.
+
+
+#### `test_client_filter_on_a_masked_column_conflicts`
+
+```python
+test_client_filter_on_a_masked_column_conflicts(self, service: DBService)
+```
+
+Test bohr's thread 15557 finding 2: a client ABAC filter that uses documento, and an Orbitra mask on documento, is refused.
+
+
+#### `test_client_filter_on_other_columns_is_fine`
+
+```python
+test_client_filter_on_other_columns_is_fine(self, service: DBService)
+```
+
+Test that a client filter whose tag no masked column has does not block a mask.
+
+
+#### `test_client_mask_conflicts`
+
+```python
+test_client_mask_conflicts(self, service: DBService)
+```
+
+Test that a client mask that can select a masked column blocks the declaration.
+
+
+#### `test_client_mask_on_a_filter_column_conflicts`
+
+```python
+test_client_mask_on_a_filter_column_conflicts(self, service: DBService)
+```
+
+Test that a client mask that can select the column of the declared Orbitra filter is refused before any write.
+
+
+#### `test_client_mask_on_other_columns_is_fine`
+
+```python
+test_client_mask_on_other_columns_is_fine(self, service: DBService)
+```
+
+Test that a client mask whose tag no masked column has does not block.
+
+
+#### `test_client_row_filter_conflicts`
+
+```python
+test_client_row_filter_conflicts(self, service: DBService)
+```
+
+Test that a client row filter on the schema blocks a declared filter, and nothing is created.
+
+
+#### `test_missing_governed_tags`
+
+```python
+test_missing_governed_tags(self, service: DBService, tag_policies: Any)
+```
+
+Test that a tenant without the governed tags (or the slot value) gets the module error, and nothing is created.
+
+
+#### `test_old_mask_udf_version_reads_back_as_the_declared_action`
+
+```python
+test_old_mask_udf_version_reads_back_as_the_declared_action(self, service: DBService)
+```
+
+Test that get_table_metadata(include_policies=True) returns the action of a policy on an old UDF version.
+
+
+#### `test_principal_limit`
+
+```python
+test_principal_limit(self, service: DBService)
+```
+
+Test that more than 20 principals in a policy is refused before any write.
+
+
+#### `test_table_stays_readable_after_every_write`
+
+```python
+test_table_stays_readable_after_every_write(self, service: DBService)
+```
+
+Test the invariant after each write of a create, a change and a removal.
+
+
+#### `test_udf_with_another_spec_is_refused`
+
+```python
+test_udf_with_another_spec_is_refused(self, service: DBService, kind: str, change: str)
+```
+
+Test that a UDF with the current name but another spec raises LakePolicyError with zero writes, for masks and filters.
+
+
+### `TestExemptionAndOwnership`
+
+
+Exemption from the known groups only, the manager group as owner, and the refusal of grants made outside Orbitra.
+
+
+**Methods:**
+
+#### `test_a_create_without_the_groups_is_refused_before_any_write`
+
+```python
+test_a_create_without_the_groups_is_refused_before_any_write(self, service: DBService, with_policies: bool, method: str, setting: Any)
+```
+
+Test that Unity Catalog mode needs the published groups: a create of either kind is refused before the physical create.
+
+A ``TableSchema`` gets ``LakeError`` and a ``TableSchemaWithPolicies`` gets ``LakePolicyError``; nothing keeps the creator as owner.
+
+
+#### `test_a_failed_owner_patch_for_another_reason_names_the_fix`
+
+```python
+test_a_failed_owner_patch_for_another_reason_names_the_fix(self, service: DBService)
+```
+
+Test that a PATCH that fails without a 403 (a transport error here) also keeps the table and names the ALTER TABLE.
+
+
+#### `test_a_failed_owner_patch_keeps_the_table`
+
+```python
+test_a_failed_owner_patch_keeps_the_table(self, service: DBService, method: str)
+```
+
+Test that a writer outside the manager group creates a TableSchema, the owner PATCH gets 403, and the error names the fix.
+
+The table is not dropped: it stays with its creator, and the error is ``LakeError`` with the ``ALTER TABLE`` to run.
+
+
+#### `test_a_new_table_goes_to_the_manager_before_its_policies`
+
+```python
+test_a_new_table_goes_to_the_manager_before_its_policies(self, service: DBService)
+```
+
+Test that a create gives the table to the manager group before any tag, UDF or policy, and exempts only the groups.
+
+
+#### `test_a_plain_create_then_a_declaration_needs_no_alter`
+
+```python
+test_a_plain_create_then_a_declaration_needs_no_alter(self, service: DBService)
+```
+
+Test that a TableSchema create followed by a TableSchemaWithPolicies update applies the policies, with no ALTER TABLE in between.
+
+
+#### `test_a_schema_change_alone_on_a_schema_owned_by_a_person_is_refused`
+
+```python
+test_a_schema_change_alone_on_a_schema_owned_by_a_person_is_refused(self, service: DBService, change: str)
+```
+
+Test that a column removal or a type change alone, under the lock, runs the access check before any write.
+
+The policies stay equal, so the plan writes nothing; the shared mask UDF must stay with the manager group.
+
+
+#### `test_a_schema_owned_by_another_principal_is_refused`
+
+```python
+test_a_schema_owned_by_another_principal_is_refused(self, service: DBService, new_table: bool)
+```
+
+Test that a schema that the manager group does not own is refused, on a create and on an update.
+
+
+#### `test_a_table_owned_by_a_person_is_refused`
+
+```python
+test_a_table_owned_by_a_person_is_refused(self, service: DBService)
+```
+
+Test that a policy write on a table that a person owns is refused with the ALTER TABLE fix, with zero writes.
+
+Such a table comes from an SDK version before this one, which left a ``TableSchema`` create with its creator.
+
+
+#### `test_a_table_schema_create_goes_to_the_manager`
+
+```python
+test_a_table_schema_create_goes_to_the_manager(self, service: DBService, method: str)
+```
+
+Test that a TableSchema create gives the new table to the manager group right after the create, with no lock and no policy read.
+
+
+#### `test_an_equal_declaration_on_a_table_owned_by_a_person_writes_nothing`
+
+```python
+test_an_equal_declaration_on_a_table_owned_by_a_person_writes_nothing(self, service: DBService)
+```
+
+Test that the ownership check runs only when the call writes: a writer's equal declaration still succeeds.
+
+
+#### `test_an_existing_table_of_the_manager_exempts_only_the_groups`
+
+```python
+test_an_existing_table_of_the_manager_exempts_only_the_groups(self, service: DBService)
+```
+
+Test that an existing table of the manager group gets policies without its owner, the caller or any user.
+
+
+#### `test_catalog_owner_is_not_checked`
+
+```python
+test_catalog_owner_is_not_checked(self, service: DBService)
+```
+
+Test that the catalog owner (the Terraform service principal) is neither exempt nor refused.
+
+
+#### `test_missing_namespace_groups_is_refused`
+
+```python
+test_missing_namespace_groups_is_refused(self, service: DBService, setting: Any, new_table: bool)
+```
+
+Test that without the published groups of the namespace a declaration is refused before any write, the create included.
+
+
+#### `test_missing_namespace_groups_without_policies_is_refused_before_the_create`
+
+```python
+test_missing_namespace_groups_without_policies_is_refused_before_the_create(self, service: DBService)
+```
+
+Test that a TableSchemaWithPolicies without a filter or mask also needs the manager group name before the create.
+
+
+#### `test_outside_modify_grant_is_refused`
+
+```python
+test_outside_modify_grant_is_refused(self, service: DBService, principal: str, privilege: str, inherited_from: Any)
+```
+
+Test that a user or group outside the namespace groups that can modify the table (directly, from the schema or the catalog) is refused.
+
+
+#### `test_outside_modify_grant_on_the_schema_is_refused_before_the_create`
+
+```python
+test_outside_modify_grant_on_the_schema_is_refused_before_the_create(self, service: DBService)
+```
+
+Test that on a new table the schema's effective permissions are checked before the physical create.
+
+
+#### `test_outside_select_grant_is_allowed`
+
+```python
+test_outside_select_grant_is_allowed(self, service: DBService)
+```
+
+Test that a principal with only SELECT is a subject: allowed, and not exempt.
+
+
+#### `test_the_catalog_admin_group_is_derived_from_the_manager_group`
+
+```python
+test_the_catalog_admin_group_is_derived_from_the_manager_group(self)
+```
+
+Test the derivation of the catalog admin group from the names of the lake module, case of the namespace aside.
+
+
+#### `test_the_setting_is_published`
+
+```python
+test_the_setting_is_published(self)
+```
+
+Test that orbitra_lake_namespace_groups is a published field of LakeClientSettings, and that the client loads that class.
+

@@ -1,0 +1,34 @@
+---
+title: prefect_entra_auth_plugin
+sidebarTitle: prefect_entra_auth_plugin
+---
+
+# `orbitra.flows.prefect_entra_auth_plugin`
+
+
+Prefect startup hook, explicitly selected through Prefect's plugin allowlist.
+
+## Functions
+
+### `setup_environment`
+
+```python
+setup_environment() -> SetupResult | None
+```
+
+
+Use Orbitra CLI settings and cached login in this worker/engine process.
+
+Only the environment name and API URL are inherited by child processes.
+Each process creates its own credential and refreshes its own tokens.
+
+### `teardown`
+
+```python
+teardown() -> None
+```
+
+
+Release this process's authentication hooks and credential.
+
+

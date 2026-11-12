@@ -1,0 +1,29 @@
+---
+title: test_hashes
+sidebarTitle: test_hashes
+---
+
+# `orbitra.lake.tests.integration.test_hashes`
+
+## Functions
+
+### `create_namespace`
+
+```python
+create_namespace()
+```
+
+
+Override of the base fixture: the integration namespace exists, and creating one needs catalog admin.
+
+
+## Classes
+
+### `TestHashesIntegration`
+
+
+Integration tests for the hash paths against a real backend.
+
+The hash sums and the check_hash short-circuits run DuckDB over the table's Iceberg data files, which the
+local catalog does not exercise: there DuckDB scans an in-memory Arrow table.
+

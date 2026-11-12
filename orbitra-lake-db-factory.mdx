@@ -1,0 +1,25 @@
+---
+title: factory
+sidebarTitle: factory
+---
+
+# `orbitra.lake.db.factory`
+
+## Functions
+
+### `get_db`
+
+```python
+get_db(settings: ClientSettings, token: str) -> BaseDB
+```
+
+
+Factory function to get a database instance based on the settings and authentication token.
+
+**Args:**
+- `settings`: The application settings.
+- `token`: The authentication token.
+
+**Returns:**
+- An instance of the appropriate database class based on the settings.
+

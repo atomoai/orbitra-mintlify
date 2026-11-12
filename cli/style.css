@@ -1,0 +1,24 @@
+/* Column sizing for the generated CLI reference tables.
+ * The tables are emitted by docs/cli/cli_mdx.py wrapped in
+ * <div className="cli-table">; without this the theme sizes
+ * every column uniformly and flags/description get squeezed.
+ */
+.cli-table table {
+  table-layout: fixed;
+  width: 100%;
+}
+
+.cli-table th:nth-child(1) { width: 26%; } /* Flag / Argument */
+.cli-table th:nth-child(2) { width: 12%; }  /* Type */
+.cli-table th:nth-child(3) { width: 12%; } /* Required */
+.cli-table th:nth-child(4) { width: 12%; } /* Default (5-column table only) */
+
+/* Must come after nth-child(4): in the 4-column Arguments table the 4th
+ * column IS the description, and last-child wins by cascade order. */
+.cli-table th:last-child { width: auto; }
+
+.cli-table td,
+.cli-table td code {
+  overflow-wrap: break-word;
+  white-space: normal;
+}

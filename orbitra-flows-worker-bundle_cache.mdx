@@ -1,0 +1,40 @@
+---
+title: bundle_cache
+sidebarTitle: bundle_cache
+---
+
+# `orbitra.flows.worker.bundle_cache`
+
+
+Code bundles on the worker machine: downloaded once, verified, unpacked safely.
+
+## Functions
+
+### `blob_downloader`
+
+```python
+blob_downloader(credential: TokenCredential) -> Downloader
+```
+
+
+Read bundles from Blob storage as ``credential``.
+
+
+## Classes
+
+### `BundleCache`
+
+
+Bundles unpacked under ``root/<sha256>``; a directory that exists is complete.
+
+
+**Methods:**
+
+#### `get`
+
+```python
+get(self, ref: BundleRef) -> Path
+```
+
+The directory holding ``ref``'s files, fetching the bundle the first time.
+

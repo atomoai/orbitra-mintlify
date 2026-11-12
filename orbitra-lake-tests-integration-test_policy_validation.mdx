@@ -1,0 +1,156 @@
+---
+title: test_policy_validation
+sidebarTitle: test_policy_validation
+---
+
+# `orbitra.lake.tests.integration.test_policy_validation`
+
+
+Behavior validation of row filters and column masks on the dev Unity Catalog (ORBITRA-1016).
+
+Same setup as ``test_policy_apply.py`` (manager = default identity, writer and reader service
+principals). Each class names its tables with its prefix in the run, ``it_<run id>_<class>_``
+(the ``table_name`` fixture), and drops them at the end. Each check writes its counts to the file
+in ``ORBITRA_VALIDATE_REPORT`` (JSON lines) when it is set.
+
+1. Concurrent updates: 4 processes, 3 rounds; every call ends in success or the lock error, and the
+   table ends readable and equal to one declaration of the round.
+2. The lock: an old lock blocks with an actionable error; the lock goes after a success and after a
+   failure; drop and create again with the same name.
+3. Reads during updates: the reader never sees a masked value in clear nor a row outside its rules.
+4. The writer: equal declaration writes nothing and takes no lock; a different one fails on the lock POST
+   (the manager check) and changes nothing.
+5. Edge cases: mixed case, quotes and backslashes, a partition column, 20 principals.
+
+
+## Classes
+
+### `TestValidateConcurrency`
+
+
+Check 1: four processes update one table at the same time, three rounds.
+
+
+**Methods:**
+
+#### `test_concurrent_processes`
+
+```python
+test_concurrent_processes(self, clients: dict[str, Any], table_name: Callable[[str], str])
+```
+
+Test that every call succeeds or gets the lock error, and each round ends readable and equal to one declaration.
+
+
+### `TestValidateLock`
+
+
+Check 2: blocking, release after success and failure, drop and create again.
+
+
+**Methods:**
+
+#### `test_drop_and_create_again`
+
+```python
+test_drop_and_create_again(self, clients: dict[str, Any], table_name: Callable[[str], str])
+```
+
+Test that drop_table and then create_table with the same name and a declaration work, with one filter UDF.
+
+
+#### `test_lock_goes_after_success_and_failure`
+
+```python
+test_lock_goes_after_success_and_failure(self, clients: dict[str, Any], table_name: Callable[[str], str])
+```
+
+Test that the lock is deleted after a successful call and after a call that fails under the lock.
+
+
+#### `test_old_lock_blocks_with_an_actionable_error`
+
+```python
+test_old_lock_blocks_with_an_actionable_error(self, clients: dict[str, Any], table_name: Callable[[str], str])
+```
+
+Test that a lock created by hand in the SDK format blocks a change for the wait, then gives the lock error.
+
+
+### `TestValidateReadsDuringUpdates`
+
+
+Check 3: the reader reads in a loop while the manager changes masks and filters.
+
+
+**Methods:**
+
+#### `test_reads_are_always_protected`
+
+```python
+test_reads_are_always_protected(self, clients: dict[str, Any], table_name: Callable[[str], str])
+```
+
+Test that every read shows rows of one declaration's filter and masked docs, or fails; never a clear value.
+
+
+### `TestValidateWriter`
+
+
+Check 4: a writer applies an equal declaration and cannot change it.
+
+
+**Methods:**
+
+#### `test_writer`
+
+```python
+test_writer(self, clients: dict[str, Any], table_name: Callable[[str], str])
+```
+
+Test zero writes and no lock for an equal declaration, a new column with it, and no change for a different one.
+
+
+### `TestValidateEdgeCases`
+
+
+Check 5: mixed case, quotes and backslashes, a partition column, 20 principals.
+
+
+**Methods:**
+
+#### `test_mixed_case`
+
+```python
+test_mixed_case(self, clients: dict[str, Any], table_name: Callable[[str], str])
+```
+
+Test a mixed-case table and columns: apply, zero writes on a second run, read by the reader.
+
+
+#### `test_partition_with_masks`
+
+```python
+test_partition_with_masks(self, clients: dict[str, Any], table_name: Callable[[str], str])
+```
+
+Test a partition column next to a mask: the reader reads the partition value and the masked value.
+
+
+#### `test_principal_limit`
+
+```python
+test_principal_limit(self, clients: dict[str, Any], table_name: Callable[[str], str])
+```
+
+Test that more than 20 principals in a policy is refused before any write, on create and on update.
+
+#### `test_quotes_and_backslashes`
+
+```python
+test_quotes_and_backslashes(self, clients: dict[str, Any], table_name: Callable[[str], str])
+```
+
+Test where values and a group name with quotes and backslashes: compile, apply and read work.
+
+

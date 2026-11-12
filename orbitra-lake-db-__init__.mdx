@@ -1,0 +1,20 @@
+---
+title: __init__
+sidebarTitle: __init__
+---
+
+# `orbitra.lake.db`
+
+
+Orbitra db module: the storage backends of the lake.
+
+- ``base.py`` is the contract (``BaseDB``).
+- ``factory.py`` picks a backend.
+- ``local.py`` and ``pyiceberg.py`` implement it.
+- ``unity/`` is the Unity backend: ``UnityDB`` in its ``__init__``; ``_rest.py`` is the Unity Catalog REST
+  transport (the token per call, ``redact()``, retries), and ``_policies.py`` is the policy part, mixed
+  into ``UnityDB``.
+
+The helper modules of a backend live inside that backend's subpackage, with a leading underscore
+(internal: no compatibility promise). The factory chooses only backends.
+

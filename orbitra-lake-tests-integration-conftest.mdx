@@ -1,0 +1,51 @@
+---
+title: conftest
+sidebarTitle: conftest
+---
+
+# `orbitra.lake.tests.integration.conftest`
+
+## Functions
+
+### `add_metadata`
+
+```python
+add_metadata(request)
+```
+
+
+Fixture to add metadata for the test class.
+
+
+### `ensure_namespace`
+
+```python
+ensure_namespace(request)
+```
+
+
+Fixture to verify the namespace exists for integration tests.
+
+
+### `setup_method`
+
+```python
+setup_method(request)
+```
+
+
+Set up the real client for one class, isolated by a table prefix and a saved query root of its own.
+
+The class sees plain names; Unity Catalog and the raw storage hold `it_<run id>_<class>_<name>` (isolation.py).
+The teardown drops every table with the class prefix and deletes the class saved query root.
+
+
+### `setup_test_table`
+
+```python
+setup_test_table(request)
+```
+
+
+Create a test table with sample data for saved query tests.
+

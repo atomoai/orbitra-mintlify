@@ -1,0 +1,202 @@
+---
+title: test_policy_apply
+sidebarTitle: test_policy_apply
+---
+
+# `orbitra.lake.tests.integration.test_policy_apply`
+
+
+Apply row filters and column masks on the dev Unity Catalog (ORBITRA-1016), with the golden check of ORBITRA-1015.
+
+Needs the lake module of ORBITRA-1014 in the tenant (governed tags, assigner rule set, READ_METADATA).
+The tests run in the namespace of the integration suite, ``e2e_tests`` (``NAMESPACE`` in ``conftest.py``).
+The default identity (az CLI or ``ORBITRA_APP_CLIENT_ID``) must be in its manager group. Two service
+principals of the namespace are also needed, one in the writer group and one in the reader group (the
+subject of the policies): ``ORBITRA_TEST_TENANT_ID``, ``ORBITRA_TEST_WRITER_CLIENT_ID``/``_SECRET`` and
+``ORBITRA_TEST_READER_CLIENT_ID``/``_SECRET``. Each class names its tables with its prefix in the run,
+``it_<run id>_<class>_`` (``run_registry.py``), and drops them at the end; when a run dies, the next run
+drops its tables with their lock and filter UDFs (``run_registry.clean_dead_runs``).
+Shared mask UDFs (``__orbitra_mask_*``) are never deleted by the SDK.
+
+
+## Functions
+
+### `clients`
+
+```python
+clients() -> Iterator[dict[str, Any]]
+```
+
+
+The manager (default identity), writer and reader clients, and the group of each SP.
+
+
+### `table_name`
+
+```python
+table_name(request: pytest.FixtureRequest) -> Callable[[str], str]
+```
+
+
+Name a table of the test's class: ``kind`` -> ``it_<run id>_<class>_<kind>``, as in the other integration tests.
+
+Two runs, or two classes of one run, then never share a table, nor its lock and filter UDFs, whose names
+derive from the table name.
+
+
+### `test_golden_covers_every_allowed_combination`
+
+```python
+test_golden_covers_every_allowed_combination()
+```
+
+
+Test that GOLDEN has every action on every SDK type the action allows (no Databricks call).
+
+
+## Classes
+
+### `TestPolicyGoldenIntegration`
+
+
+One table per SDK type, one column per allowed mask action, read back by the reader SP.
+
+
+**Methods:**
+
+#### `test_masks`
+
+```python
+test_masks(self, clients: dict[str, Any], table_name: Callable[[str], str], sdk_type: str)
+```
+
+Test create, zero writes on the second run, and the masked values that the reader reads.
+
+
+### `TestRowFilterGoldenIntegration`
+
+
+Row filters with 1 and 2 columns, and rules without where, read by the reader SP.
+
+
+**Methods:**
+
+#### `test_row_filter`
+
+```python
+test_row_filter(self, clients: dict[str, Any], table_name: Callable[[str], str], case: str, expected_ids: list[int])
+```
+
+Test create, zero writes on the second run, and the rows that the reader reads.
+
+
+### `TestPolicyLifecycleIntegration`
+
+
+Change and remove a declaration as the manager; a writer applies an equal one and cannot change it.
+
+
+**Methods:**
+
+#### `test_change_and_remove`
+
+```python
+test_change_and_remove(self, clients: dict[str, Any], table_name: Callable[[str], str])
+```
+
+Test a mask action change and a filter change in place (no policy DELETE), then the removal of everything.
+
+
+#### `test_writer`
+
+```python
+test_writer(self, clients: dict[str, Any], table_name: Callable[[str], str])
+```
+
+Test that the writer adds a column with the equal declaration, and gets LakePolicyError on a different one.
+
+
+### `TestSubjectReadsIntegration`
+
+
+A reader under a policy reads only through the warehouse; elsewhere it gets LakePolicyError (ORBITRA-1017).
+
+
+**Methods:**
+
+#### `test_subject_reads`
+
+```python
+test_subject_reads(self, clients: dict[str, Any], table_name: Callable[[str], str])
+```
+
+Test get_table_data and run_query local (errors) and remote (masked rows) for the reader; the manager reads as today.
+
+
+### `TestHashIntegration`
+
+
+The Orbitra hash cannot be used on tables with access policies.
+
+
+**Methods:**
+
+#### `test_hash_is_refused_next_to_policies`
+
+```python
+test_hash_is_refused_next_to_policies(self, clients: dict[str, Any], table_name: Callable[[str], str])
+```
+
+Test the refusals: include_hash with a declaration, a TableSchema adding the hash to a masked table, and a declaration on a hashed table.
+
+
+### `TestColumnChangesIntegration`
+
+
+Column removal and type change with policies, against the real Unity Catalog.
+
+
+**Methods:**
+
+#### `test_remove_and_retype`
+
+```python
+test_remove_and_retype(self, clients: dict[str, Any], table_name: Callable[[str], str])
+```
+
+Test the two-call removal of a masked column, and int -> long of a masked column (the mask moves to the long UDF).
+
+
+### `TestWriterColumnChangesIntegration`
+
+
+A writer removes and retypes columns with a TableSchema (no lock); Unity Catalog refuses a column with a policy.
+
+
+**Methods:**
+
+#### `test_writer_column_changes`
+
+```python
+test_writer_column_changes(self, clients: dict[str, Any], table_name: Callable[[str], str])
+```
+
+Test that the writer removes and retypes untagged columns, and gets LakePolicyError for a masked column, which stays.
+
+
+### `TestPolicyConcurrencyIntegration`
+
+
+Two runs on one table at the same time serialize on the per-table lock.
+
+
+**Methods:**
+
+#### `test_two_threads`
+
+```python
+test_two_threads(self, clients: dict[str, Any], table_name: Callable[[str], str])
+```
+
+Test that two concurrent create_or_update_table calls end in one of the two declarations, read consistently.
+

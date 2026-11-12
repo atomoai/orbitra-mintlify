@@ -1,0 +1,54 @@
+---
+title: worker
+sidebarTitle: worker
+---
+
+# `orbitra.flows.worker.worker`
+
+
+A process worker that runs each flow from its code bundle, in the environment its uv.lock declares.
+
+## Functions
+
+### `default_root`
+
+```python
+default_root() -> Path
+```
+
+
+Where the worker keeps bundles and environments.
+
+
+## Classes
+
+### `OrbitraProcessVariables`
+
+### `OrbitraProcessJobConfiguration`
+
+**Methods:**
+
+#### `bundle_ref`
+
+```python
+bundle_ref(self) -> BundleRef
+```
+
+The bundle this run needs.
+
+
+#### `prepare_for_flow_run`
+
+```python
+prepare_for_flow_run(self, flow_run: 'FlowRun', deployment: 'DeploymentResponse | None' = None, flow: 'Flow | None' = None, work_pool: 'WorkPool | None' = None, worker_name: 'str | None' = None, worker_id: 'UUID | None' = None) -> None
+```
+
+### `OrbitraProcessWorker`
+
+**Methods:**
+
+#### `run`
+
+```python
+run(self, flow_run: 'FlowRun', configuration: OrbitraProcessJobConfiguration, task_status: Optional[anyio.abc.TaskStatus[int]] = None) -> ProcessWorkerResult
+```

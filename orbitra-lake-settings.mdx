@@ -1,0 +1,23 @@
+---
+title: settings
+sidebarTitle: settings
+---
+
+# `orbitra.lake.settings`
+
+
+The settings that only the lake SDK reads, on top of the platform's ``ClientSettings``.
+
+## Classes
+
+### `LakeClientSettings`
+
+
+The platform settings plus the lake's own.
+
+**Attributes:**
+- `orbitra_lake_namespace_groups`: Namespace to the display names of its three Entra groups,
+``{"reader"\: ..., "writer"\: ..., "manager"\: ...}``, as the tenant publishes them (the
+``namespace_group_names`` output of the lake module). The row filters and column masks of
+``TableSchemaWithPolicies`` need it. None when the tenant does not publish it.
+

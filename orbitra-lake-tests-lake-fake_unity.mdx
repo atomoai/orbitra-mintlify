@@ -1,0 +1,106 @@
+---
+title: fake_unity
+sidebarTitle: fake_unity
+---
+
+# `orbitra.lake.tests.lake.fake_unity`
+
+
+An in-memory Unity Catalog REST API for the policy tests, and a UnityDB backed by the local catalog.
+
+## Functions
+
+### `namespace_groups`
+
+```python
+namespace_groups(namespace: str = 'ns') -> dict[str, dict[str, str]]
+```
+
+
+Return the setting ``orbitra_lake_namespace_groups`` for one namespace, with the names of the lake module.
+
+
+## Classes
+
+### `FakeUnityCatalog`
+
+
+Simulates the Unity Catalog endpoints that the SDK calls and records every call.
+
+The fake enforces what matters for safety: writes need a manager caller (``caller_is_manager``;
+in Unity Catalog, CREATE FUNCTION on the schema for the lock), a policy must call an existing UDF,
+a governed tag value must be allowed, and names are unique.
+
+
+**Methods:**
+
+#### `mask_count`
+
+```python
+mask_count(self, full: str, column: str) -> int
+```
+
+Return how many mask policies select a column (0 = clear, 1 = masked, 2+ = the query fails closed).
+
+
+#### `readable`
+
+```python
+readable(self, full: str, columns: list[str]) -> bool
+```
+
+Whether the table is readable: every policy calls an existing UDF, at most one row filter, one mask per column.
+
+
+#### `request`
+
+```python
+request(self, method: str, path: str) -> dict[str, Any]
+```
+
+Serve one call. The fake never answers 429 or 503 by itself, so ``retry`` changes nothing.
+
+
+#### `table_policies`
+
+```python
+table_policies(self, full: str) -> list[dict[str, Any]]
+```
+
+Return the policies defined on a table.
+
+
+#### `writes`
+
+```python
+writes(self) -> list[tuple[str, str]]
+```
+
+Return the recorded calls that are not GET.
+
+
+### `FakeUnityDB`
+
+
+The local Iceberg catalog with the Unity Catalog policy calls served by ``FakeUnityCatalog``.
+
+
+**Methods:**
+
+#### `remove_column_from_table`
+
+```python
+remove_column_from_table(self, namespace: str, table_name: str, column: str) -> bool
+```
+
+Refuse, like Unity Catalog, to remove a column with a governed tag (verified in dev on 16 Oct 2026).
+
+
+#### `uc`
+
+```python
+uc(self) -> FakeUnityCatalog
+```
+
+The fake Unity Catalog.
+

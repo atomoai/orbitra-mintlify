@@ -1,0 +1,205 @@
+---
+title: client_settings
+sidebarTitle: client_settings
+---
+
+# `orbitra.commons.client_settings`
+
+## Functions
+
+### `get_available_environments`
+
+```python
+get_available_environments() -> list[str]
+```
+
+
+Get the list of available environment names from the Orbitra settings source.
+
+**Returns:**
+- list\[str]: A sorted list of available environment names.
+
+
+### `get_client_settings`
+
+```python
+get_client_settings(environment: Optional[str] = None, resolve_secrets: bool = True) -> Any
+```
+
+
+Get the client settings for the Orbitra application.
+
+A project that needs settings of its own subclasses ``ClientSettings``, adds its fields,
+and names that subclass. It then reads its own and the platform's from one object, with
+one load:
+
+    settings = get_client_settings(cls=BrainSettings)
+
+Subclassing rather than composing is what keeps one project out of another's way: a
+subclass carries its own fields and nothing another installed package declares, so no
+configuration of theirs can fail this call.
+
+Code that must load settings cheaply or without the network, such as code that runs when
+a module is imported, reads the local sources alone:
+
+    settings = get_client_settings(resolve_secrets=False, cls=FlowsSettings, fetch_published=False)
+
+**Args:**
+- `environment`: The environment to load the settings for; resolved from the settings sources when None.
+- `resolve_secrets`: Whether to read secret references from Key Vault. Resolution needs a
+credential, so it may prompt for an interactive login. Pass ``False`` when the caller only
+reads settings that can never be a reference, such as the tenant and the CLI client id;
+any reference then keeps its literal ``orbitra-secret\://`` text instead of its value.
+- `cls`: The project's own subclass of ``ClientSettings``.
+- `fetch_published`: Whether to fetch the tenant's published settings; resolved from
+the settings sources when None, and True when nothing says otherwise. When False, no request
+is sent and no settings package is needed, and the settings read as if the tenant had published
+nothing\: a published field with a default takes it, and reading one without raises
+``SettingNotFetchedError`` unless a local source sets it.
+
+**Returns:**
+- An instance of ``cls``, or of ``ClientSettings`` when none is named.
+
+
+### `published_settings`
+
+```python
+published_settings(settings_cls: type[BaseModel], environment: str) -> dict[str, Any]
+```
+
+
+What the published settings URL is allowed to contribute for one environment.
+
+Fetching happens here rather than inside a settings source so that nothing has to know
+the environment before the sources are assembled. Keys nothing marked as published are
+silently dropped, so the public URL can never inject a private setting such as
+``orbitra_app_client_secret``, nor a field a project added and kept local. Dropping
+silently also lets a tenant publish fields introduced by newer SDK versions without
+older versions complaining about them.
+
+**Args:**
+- `settings_cls`: The settings class being built, which decides
+which names are publishable.
+- `environment`: The environment whose block to read.
+
+**Returns:**
+- dict[str, Any]: The values the URL may supply, ready to be used as the
+lowest-priority source.
+
+**Raises:**
+- `ValueError`: If the environment is not in the document, or if a published value is
+an ``orbitra-secret\://`` reference — the URL is public and cannot name a vault.
+
+
+### `resolve_environment`
+
+```python
+resolve_environment(environment: Optional[str] = None) -> str
+```
+
+
+The environment to load, from the caller or from the local sources.
+
+**Args:**
+- `environment`: What the caller asked for, or ``None`` to resolve it.
+
+**Returns:**
+- The environment name, falling back to ``prod`` when nothing says otherwise.
+
+
+## Classes
+
+### `Published`
+
+
+Marks a field of a project's settings the published settings URL is allowed to supply.
+
+A field a project adds is local-only unless it carries this marker: it comes from init,
+the process environment, ``.env``, ``pyproject.toml`` or a secret file, and the settings
+URL cannot set it. Saying otherwise is a security decision, so it is written on the field
+rather than inferred:
+
+    openai_base_url: Annotated[Optional\[str], Published()] = Field(default=None, min_length=1)
+
+The marker only widens where a value may come from. Local sources still outrank the URL,
+so marking a field published never takes an override away from whoever runs.
+
+
+### `SettingNotFetchedError`
+
+
+A published setting with no default was read from settings loaded without fetching the published settings.
+
+Raised on reading, not on loading: such settings read as if the tenant had published
+nothing, so a published field with no default holds a value only when a local source set it.
+
+Not an AttributeError: raised inside a property such as ``orbitra_authority``, Pydantic
+would take one for the property itself being missing, and report that instead.
+
+
+### `ClientSettings`
+
+
+Client settings for the Orbitra application.
+
+A field marked ``Published`` may be supplied by the tenant's public settings URL.
+Everything else comes only from init, the process environment, ``.env``,
+``pyproject.toml`` or a secrets file — the URL is unauthenticated and cannot set it.
+A project adding settings of its own writes the same two shapes on its own subclass.
+
+
+**Methods:**
+
+#### `get_extra`
+
+```python
+get_extra(self, name: str) -> Any
+```
+
+Read a configured extra by case-insensitive name.
+
+**Args:**
+- `name`: Name of a setting not declared as a ClientSettings field.
+
+**Returns:**
+- The resolved secret text or the literal value supplied by a source.
+
+**Raises:**
+- `KeyError`: If the extra is missing or the name denotes a declared field.
+
+
+#### `orbitra_authority`
+
+```python
+orbitra_authority(self) -> str
+```
+
+Return the authority domain for the application.
+
+
+#### `orbitra_client_id`
+
+```python
+orbitra_client_id(self) -> str
+```
+
+Return the client ID for the application.
+
+
+#### `orbitra_token_issuer`
+
+```python
+orbitra_token_issuer(self) -> list[str]
+```
+
+Return the token issuer domain for the application.
+
+#### `settings_customise_sources`
+
+```python
+settings_customise_sources(cls, settings_cls: type[BaseSettings], init_settings: PydanticBaseSettingsSource, env_settings: PydanticBaseSettingsSource, dotenv_settings: PydanticBaseSettingsSource, file_secret_settings: PydanticBaseSettingsSource) -> tuple[PydanticBaseSettingsSource, ...]
+```
+
+Customise the settings sources for the client settings.
+
+

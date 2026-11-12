@@ -1,0 +1,350 @@
+---
+title: test_policy_models
+sidebarTitle: test_policy_models
+---
+
+# `orbitra.lake.tests.lake.test_policy_models`
+
+
+Tests for the ColumnMask, RowAccess and RowFilter models and their validation in TableSchemaWithPolicies.
+
+## Classes
+
+### `TestSerialization`
+
+
+JSON round-trip, the schema_kind discriminator, and byte-for-byte compatibility of TableSchema.
+
+
+**Methods:**
+
+#### `test_access_accepts_dicts_and_row_access`
+
+```python
+test_access_accepts_dicts_and_row_access(self)
+```
+
+Test that access given as dicts and as RowAccess objects produces the same dump.
+
+
+#### `test_discriminator_selects_the_class`
+
+```python
+test_discriminator_selects_the_class(self)
+```
+
+Test that AnyTableSchema parses a payload without schema_kind as TableSchema, and the subclass by its kind.
+
+
+#### `test_equality_ignores_policies`
+
+```python
+test_equality_ignores_policies(self)
+```
+
+Test that __eq__ does not change: the policy diff belongs to the reconciliation.
+
+
+#### `test_round_trip_is_idempotent`
+
+```python
+test_round_trip_is_idempotent(self)
+```
+
+Test that model_validate(model_dump()) returns an equal dump, in Python and in JSON.
+
+
+#### `test_schema_kind_is_dumped_by_the_subclass`
+
+```python
+test_schema_kind_is_dumped_by_the_subclass(self)
+```
+
+Test that the subclass dumps schema_kind, and every mask and the row filter, None included.
+
+
+#### `test_serialization_json_schema_keeps_fields`
+
+```python
+test_serialization_json_schema_keeps_fields(self)
+```
+
+Test that the serialization JSON schema (the lake API OpenAPI) lists the fields of the subclass.
+
+
+#### `test_subclass_accepts_plain_columns`
+
+```python
+test_subclass_accepts_plain_columns(self)
+```
+
+Test that ColumnSchema objects (from get_table_metadata) become columns without a mask.
+
+
+#### `test_table_schema_refuses_policy_parts`
+
+```python
+test_table_schema_refuses_policy_parts(self, payload: dict[str, Any])
+```
+
+Test that a TableSchema refuses a mask or a row filter instead of dropping it in silence.
+
+
+#### `test_table_schema_serializes_as_before`
+
+```python
+test_table_schema_serializes_as_before(self)
+```
+
+Test that a TableSchema serializes byte for byte as on main: no schema_kind, no policy fields.
+
+
+### `TestValidation`
+
+
+One test per validation rule of the card (item 6), plus the literal rules.
+
+
+**Methods:**
+
+#### `test_action_inside_allowed_types`
+
+```python
+test_action_inside_allowed_types(self, action: str, column_type: str)
+```
+
+Test that an action on a type it accepts is valid.
+
+
+#### `test_action_none_is_always_valid`
+
+```python
+test_action_none_is_always_valid(self)
+```
+
+Test that the removal action is valid on any column, including partition and filter columns.
+
+
+#### `test_action_outside_allowed_types`
+
+```python
+test_action_outside_allowed_types(self, action: str, column_type: str)
+```
+
+Test that an action on a type it does not accept is refused.
+
+
+#### `test_control_characters_in_values`
+
+```python
+test_control_characters_in_values(self, value: str)
+```
+
+Test that control characters in a where value are refused.
+
+
+#### `test_empty_access_removes_without_column_checks`
+
+```python
+test_empty_access_removes_without_column_checks(self)
+```
+
+Test that access=[] (removal) is valid with any columns.
+
+
+#### `test_empty_to`
+
+```python
+test_empty_to(self)
+```
+
+Test that a rule without groups is refused.
+
+
+#### `test_empty_where_values`
+
+```python
+test_empty_where_values(self)
+```
+
+Test that a filter column without values is refused (an empty IN list is not valid SQL).
+
+
+#### `test_every_rule_without_where_is_refused`
+
+```python
+test_every_rule_without_where_is_refused(self)
+```
+
+Test that a filter whose rules all lack where is refused, with the advice to use table grants.
+
+
+#### `test_filter_column_does_not_exist`
+
+```python
+test_filter_column_does_not_exist(self)
+```
+
+Test that a row filter on a column that does not exist is refused.
+
+
+#### `test_filter_column_type_not_supported`
+
+```python
+test_filter_column_type_not_supported(self, column_type: str)
+```
+
+Test that a row filter on a column type other than string, int and long is refused.
+
+
+#### `test_filter_column_with_mask`
+
+```python
+test_filter_column_with_mask(self)
+```
+
+Test that a column used in where cannot have a mask.
+
+
+#### `test_group_name_length`
+
+```python
+test_group_name_length(self)
+```
+
+Test that a group name of 256 characters is accepted and one of 257 is refused (Entra displayName limit).
+
+
+#### `test_hash_column_is_refused`
+
+```python
+test_hash_column_is_refused(self)
+```
+
+Test that a TableSchemaWithPolicies cannot have __orbitra_hash__: the hash cannot be used with access policies.
+
+
+#### `test_invalid_group_names`
+
+```python
+test_invalid_group_names(self, group: str)
+```
+
+Test that empty group names and control characters are refused everywhere a group is accepted.
+
+
+#### `test_mask_on_partition_column`
+
+```python
+test_mask_on_partition_column(self)
+```
+
+Test that a mask on a partition column is refused.
+
+
+#### `test_removed_masks_do_not_count`
+
+```python
+test_removed_masks_do_not_count(self)
+```
+
+Test that columns with action none do not count towards the limit.
+
+
+#### `test_replace_with_null_on_required_column`
+
+```python
+test_replace_with_null_on_required_column(self)
+```
+
+Test that replace-with-null on a required (partition) column is refused.
+
+
+#### `test_rule_without_where_next_to_a_rule_with_where`
+
+```python
+test_rule_without_where_next_to_a_rule_with_where(self)
+```
+
+Test that a rule without where is valid when another rule has where.
+
+
+#### `test_too_many_filter_columns`
+
+```python
+test_too_many_filter_columns(self)
+```
+
+Test that more than 3 distinct filter columns in the table are refused.
+
+
+#### `test_too_many_masked_columns`
+
+```python
+test_too_many_masked_columns(self)
+```
+
+Test that more than 32 masked columns are refused (the governed tag values are 1..32).
+
+
+#### `test_unknown_action`
+
+```python
+test_unknown_action(self)
+```
+
+Test that an action outside the spec is refused.
+
+
+#### `test_values_at_type_limits`
+
+```python
+test_values_at_type_limits(self, column_type: str, value: Any)
+```
+
+Test that the limits of each type are accepted.
+
+
+#### `test_values_checked_against_column_type`
+
+```python
+test_values_checked_against_column_type(self, column_type: str, value: Any)
+```
+
+Test that where values must match the column type and range.
+
+
+#### `test_values_must_be_str_or_int`
+
+```python
+test_values_must_be_str_or_int(self, value: Any)
+```
+
+Test that booleans, floats and nulls are refused as where values.
+
+
+### `TestLocalMode`
+
+
+The local backend validates the declaration and applies nothing.
+
+
+**Methods:**
+
+#### `test_local_mode_accepts_policies_and_applies_nothing`
+
+```python
+test_local_mode_accepts_policies_and_applies_nothing(self)
+```
+
+Test that create and update accept a declaration, and that the metadata returns no policy parts.
+
+
+#### `test_local_mode_still_validates`
+
+```python
+test_local_mode_still_validates(self)
+```
+
+Test that an invalid declaration fails before any change.
+

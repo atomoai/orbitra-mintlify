@@ -1,0 +1,89 @@
+---
+title: __init__
+sidebarTitle: __init__
+---
+
+# `orbitra.lake.db.unity`
+
+
+The Unity Catalog backend: ``UnityDB``. Its REST transport is in ``_rest.py``, and its policy calls are in ``_policies.py``.
+
+## Functions
+
+### `policy_read_message`
+
+```python
+policy_read_message(full_name: str) -> str
+```
+
+
+Return the error for a reader under an access policy outside the warehouse.
+
+
+### `query_tables`
+
+```python
+query_tables(query: str, namespace: str) -> list[tuple[str, str]]
+```
+
+
+Return every table-like ``(namespace, name)`` pair of a DuckDB query, in order and without repeats.
+
+CTE names are included on purpose: a CTE can have the name of a table that it reads
+(``WITH t AS (SELECT * FROM t) ...``), and resolving CTE scopes is not worth the risk. A name
+that is not a table answers 404 to the caller's lookup, which ignores it.
+
+**Raises:**
+- `sqlglot.errors.ParseError`: If the query does not parse.
+
+
+## Classes
+
+### `UnityDB`
+
+
+Concrete implementation of PyIcebergDB for Unity Catalog.
+
+Row filters and column masks go through the Unity Catalog REST API (``UnityPolicyClient``).
+
+**Attributes:**
+- `token`: Authentication token for accessing Unity Catalog.
+- `settings`: Configuration settings for the database connection.
+
+
+**Methods:**
+
+#### `get_sql_dialect`
+
+```python
+get_sql_dialect(self, engine: Literal['local', 'remote'] = 'local') -> str
+```
+
+#### `get_table_data`
+
+```python
+get_table_data(self, namespace: str, table_name: str, scan_filters: list[Filter], limit: Optional[int] = None, selected_fields: Optional[list[str]] = None) -> pd.DataFrame
+```
+
+#### `planning_mode`
+
+```python
+planning_mode(self, namespace: str, table_name: str) -> Optional[str]
+```
+
+Return ``config["scan-planning-mode"]`` of a light loadTable, or None (also when the name is not a table).
+
+The credentials of the answer are discarded.
+
+
+#### `refresh_token`
+
+```python
+refresh_token(self, token: str) -> None
+```
+
+#### `run_query`
+
+```python
+run_query(self, namespace: str, query: str, engine: Literal['local', 'remote'] = 'local') -> pd.DataFrame
+```

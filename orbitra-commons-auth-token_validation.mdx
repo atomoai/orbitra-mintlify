@@ -1,0 +1,29 @@
+---
+title: token_validation
+sidebarTitle: token_validation
+---
+
+# `orbitra.commons.auth.token_validation`
+
+## Functions
+
+### `get_validated_token_payload`
+
+```python
+get_validated_token_payload(token: str, audience: str, authority: str, token_issuer: list[str]) -> dict
+```
+
+
+Validate the JWT token and return its payload.
+
+This function decodes the JWT token and verifies its signature using the public key retrieved from the JWKS endpoint.
+
+**Args:**
+- `token`: The JWT token to validate.
+- `audience`: The expected audience of the token.
+- `authority`: The authority URL for the application.
+- `token_issuer`: The token issuer URLs for the application.
+
+**Returns:**
+- The decoded payload of the JWT token if validation is successful.
+

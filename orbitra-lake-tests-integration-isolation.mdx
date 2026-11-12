@@ -1,0 +1,124 @@
+---
+title: isolation
+sidebarTitle: isolation
+---
+
+# `orbitra.lake.tests.integration.isolation`
+
+
+Isolate one integration test class by a prefix on every table and saved query it creates.
+
+The shared test classes (orbitra/lake/tests/lake) use fixed names such as ``inf_diario_fi`` and ``test_data``.
+``isolate_client`` patches one client so that the SDK and the tests still see those plain names, while Unity Catalog
+and the raw storage hold ``<prefix><name>``. Two runs, or two classes of one run, then never touch the same objects.
+
+The patch is on the client instance only, at these points:
+
+- ``db.catalog``: a proxy that adds the prefix to every table identifier and lists only the prefixed tables. The
+  ``_get_catalog`` of the instance returns the proxy too, so ``refresh_token`` keeps it.
+- ``db._run_query_local_engine`` and ``db._get_duckdb_connection``: DuckDB resolves plain names through views
+  ``memory.main.<name>`` on ``iceberg_catalog.<namespace>.<prefix><name>``.
+- ``db._run_query_remote_engine``: the plain names of the prefixed tables are replaced in the SQL text.
+- ``db.full_table_name``: the Unity Catalog REST calls of the access policies (``drop_table`` takes the lock of
+  the table and reads its row filter) use ``<prefix><name>``, so the lock and filter UDF names, which derive from
+  it, are of the prefixed table too.
+- ``saved_query_service.raw_service``: saved queries live under ``<root>/.orbitra/saved_queries`` instead of
+  ``.orbitra/saved_queries`` in the raw container.
+
+
+## Functions
+
+### `isolate_client`
+
+```python
+isolate_client(client: OrbitraLakeClient, prefix: str, saved_query_root: str) -> None
+```
+
+
+Patch ``client`` so that its tables are ``<prefix><name>`` and its saved queries live under ``saved_query_root``.
+
+
+## Classes
+
+### `PrefixedCatalog`
+
+
+Catalog proxy: the caller uses plain table names, the wrapped catalog gets ``<prefix><name>``.
+
+It fails closed. The methods in ISOLATED add the prefix, the methods in PASS_THROUGH take no table identifier and
+go to the wrapped catalog unchanged, and any other attribute raises. A new catalog call in the SDK then fails the
+integration tests instead of reaching a table without the prefix; tests/test_integration_isolation.py also checks the SDK source.
+
+
+**Methods:**
+
+#### `create_table`
+
+```python
+create_table(self, identifier: str | tuple[str, ...], *args: Any, **kwargs: Any) -> Any
+```
+
+Create the prefixed table, retrying Unity's rejections of concurrent creates.
+
+
+#### `drop_table`
+
+```python
+drop_table(self, identifier: str | tuple[str, ...]) -> None
+```
+
+Drop the prefixed table, retrying Unity's rejections of concurrent drops.
+
+
+#### `list_tables`
+
+```python
+list_tables(self, namespace: str | tuple[str, ...]) -> list[tuple[str, ...]]
+```
+
+The tables with the prefix, under their plain names.
+
+
+#### `load_table`
+
+```python
+load_table(self, identifier: str | tuple[str, ...]) -> Any
+```
+
+Load the prefixed table. Its own identifier, used for commits, is the prefixed one.
+
+
+#### `table_exists`
+
+```python
+table_exists(self, identifier: str | tuple[str, ...]) -> bool
+```
+
+Whether the prefixed table exists.
+
+
+### `RootedRawService`
+
+
+RawService whose paths all live under ``root`` in the raw container of the namespace.
+
+
+**Methods:**
+
+#### `get_raw_file_system`
+
+```python
+get_raw_file_system(self, namespace: str) -> AbstractFileSystem
+```
+#### `read_raw_bytes_from_blob`
+
+```python
+read_raw_bytes_from_blob(self, full_filename: str, namespace: str) -> io.BytesIO
+```
+
+#### `save_raw_bytes_to_blob`
+
+```python
+save_raw_bytes_to_blob(self, bytes_io: io.BytesIO, full_filename: str, namespace: str) -> bool
+```
+

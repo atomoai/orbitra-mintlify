@@ -1,0 +1,52 @@
+---
+title: test_policy_udfs
+sidebarTitle: test_policy_udfs
+---
+
+# `orbitra.lake.tests.integration.test_policy_udfs`
+
+
+Evaluate the compiled UDF bodies on the Databricks SQL warehouse with the Iceberg REST spec vectors.
+
+The bodies run as plain ``SELECT`` expressions over literals: no function, table or policy is created.
+
+
+## Functions
+
+### `remote_client`
+
+```python
+remote_client(request)
+```
+
+
+Build the real client. This class only runs SELECT statements, so there is nothing to clean up.
+
+
+## Classes
+
+### `TestPolicyUdfBodiesIntegration`
+
+
+The UDF bodies give the spec results and keep the column type on Databricks.
+
+
+**Methods:**
+
+#### `test_mask_body`
+
+```python
+test_mask_body(self, action: str, column_uc_type: str, literal: str, expected: Optional[str])
+```
+
+Test one mask body against its expected value and type.
+
+
+#### `test_row_filter_body`
+
+```python
+test_row_filter_body(self, c1: str, c2: str, expected: bool)
+```
+
+Test the filter body with escaped literals, with the group check of the first rule replaced by TRUE.
+

@@ -1,0 +1,242 @@
+---
+title: test_retry
+sidebarTitle: test_retry
+---
+
+# `orbitra.lake.tests.test_retry`
+
+## Functions
+
+### `clean_retry_env`
+
+```python
+clean_retry_env(monkeypatch)
+```
+
+
+Run without any retry env set, so the decorator arguments apply.
+
+
+## Classes
+
+### `TestRetryDecorator`
+
+
+Test cases for the retry decorator function.
+
+
+**Methods:**
+
+#### `test_all_three_env_vars_override`
+
+```python
+test_all_three_env_vars_override(self, monkeypatch)
+```
+
+Setting all three env vars simultaneously overrides retries, delay, and backoff.
+
+
+#### `test_default_arguments`
+
+```python
+test_default_arguments(self, monkeypatch)
+```
+
+A bare @retry uses retries=4, delay=3 and backoff=2.
+
+
+#### `test_env_var_overrides_delay_and_backoff`
+
+```python
+test_env_var_overrides_delay_and_backoff(self, monkeypatch)
+```
+
+ORBITRA_LAKE_RETRY_DELAY and ORBITRA_LAKE_RETRY_BACKOFF override the decorator's timing args.
+
+
+#### `test_env_var_overrides_retries`
+
+```python
+test_env_var_overrides_retries(self, monkeypatch)
+```
+
+ORBITRA_LAKE_NUMBER_OF_RETRIES overrides the decorator's retries argument.
+
+
+#### `test_env_vars_default_to_decorator_args`
+
+```python
+test_env_vars_default_to_decorator_args(self, monkeypatch)
+```
+
+Without env vars, the decorator's own arguments are used.
+
+
+#### `test_function_fails_all_retries`
+
+```python
+test_function_fails_all_retries(self)
+```
+
+Test that a function fails after all retry attempts.
+
+
+#### `test_function_succeeds_after_retries`
+
+```python
+test_function_succeeds_after_retries(self)
+```
+
+Test that a function succeeds after some retries.
+
+
+#### `test_retry_preserves_function_metadata`
+
+```python
+test_retry_preserves_function_metadata(self)
+```
+
+Test that the wraps decorator preserves function metadata.
+
+
+#### `test_retry_timing_and_backoff`
+
+```python
+test_retry_timing_and_backoff(self)
+```
+
+Test that retry delays increase with backoff factor.
+
+
+#### `test_retry_with_specific_exception`
+
+```python
+test_retry_with_specific_exception(self)
+```
+
+Test that retry only catches specified exception types.
+
+
+#### `test_successful_function_no_retry`
+
+```python
+test_successful_function_no_retry(self)
+```
+
+Test that a successful function doesn't retry.
+
+
+#### `test_warning_includes_attempt_and_total`
+
+```python
+test_warning_includes_attempt_and_total(self)
+```
+
+Warning log on retry includes the current attempt number and total retries.
+
+
+#### `test_warning_includes_exception_type_and_message`
+
+```python
+test_warning_includes_exception_type_and_message(self)
+```
+
+Warning log on retry includes the exception class name and message.
+
+
+### `TestRetryJitter`
+
+
+The jitter adds up to a fraction of each wait, never waits less than the base, and is configurable.
+
+
+**Methods:**
+
+#### `test_default_jitter_adds_up_to_half_the_wait`
+
+```python
+test_default_jitter_adds_up_to_half_the_wait(self)
+```
+
+With the highest draw, the default jitter adds 50% to each wait.
+
+
+#### `test_default_jitter_lower_bound_is_the_base_wait`
+
+```python
+test_default_jitter_lower_bound_is_the_base_wait(self)
+```
+
+With the lowest draw, the waits are the base ones: the jitter never shortens a wait.
+
+
+#### `test_env_var_overrides_jitter`
+
+```python
+test_env_var_overrides_jitter(self, monkeypatch, value, expected)
+```
+
+ORBITRA_LAKE_RETRY_JITTER overrides the decorator's jitter argument.
+
+
+#### `test_jitter_argument`
+
+```python
+test_jitter_argument(self)
+```
+
+The decorator's jitter argument sets the fraction.
+
+
+#### `test_waits_spread_between_the_bounds`
+
+```python
+test_waits_spread_between_the_bounds(self)
+```
+
+Real draws land between the base wait and 1.5 times it.
+
+
+#### `test_warning_includes_the_effective_wait`
+
+```python
+test_warning_includes_the_effective_wait(self)
+```
+
+Each attempt logs the wait it is about to sleep, jitter included.
+
+
+### `TestRetryInvalidEnv`
+
+
+An invalid retry env falls back to the decorator default with a warning instead of breaking the call.
+
+
+**Methods:**
+
+#### `test_fractional_retries_is_invalid`
+
+```python
+test_fractional_retries_is_invalid(self, monkeypatch)
+```
+
+The number of retries is an integer, so 2.5 falls back to the default.
+
+
+#### `test_invalid_value_falls_back_to_the_default`
+
+```python
+test_invalid_value_falls_back_to_the_default(self, monkeypatch, name, value)
+```
+
+Each env, set to something that is not a non-negative number, warns and uses the default.
+
+
+#### `test_zero_is_valid`
+
+```python
+test_zero_is_valid(self, monkeypatch)
+```
+
+Zero is a valid value: no retries, no wait, no jitter.
+

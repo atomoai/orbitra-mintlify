@@ -1,0 +1,124 @@
+---
+title: test_pyiceberg_internal_contract
+sidebarTitle: test_pyiceberg_internal_contract
+---
+
+# `orbitra.lake.tests.lake.test_pyiceberg_internal_contract`
+
+
+Pins the semi-internal pyiceberg surface that PyIcebergDB composes.
+
+The atomic write paths (ORBITRA-833/835) build single overwrite snapshots out of pyiceberg
+building blocks that are not all public API. When a pyiceberg upgrade moves or reshapes one of
+them, these tests fail fast with a pointer to the dependent code, instead of letting the write
+path break deep inside a data flow. The behavioral suites (TestData, TestAtomicPartitionOverwrite)
+remain the authority on semantics — this module only guards the import/signature surface, so keep
+both in sync with `orbitra/lake/db/pyiceberg.py` when the internal usage changes.
+
+
+## Classes
+
+### `TestPyIcebergInternalContract`
+
+
+One test per semi-internal pyiceberg symbol used by orbitra.lake.db.pyiceberg.
+
+
+**Methods:**
+
+#### `test_dataframe_to_data_files_signature`
+
+```python
+test_dataframe_to_data_files_signature(self)
+```
+
+Both overwrite paths write parquet files through this helper, sharing one counter per commit for unique file names.
+
+
+#### `test_expression_visitor_helpers`
+
+```python
+test_expression_visitor_helpers(self)
+```
+
+Metadata-only discovery projects the predicate onto the current spec and evaluates manifest partition summaries.
+
+
+#### `test_manifest_surface`
+
+```python
+test_manifest_surface(self)
+```
+
+Metadata-only discovery iterates the data manifests of the current spec and their entries directly.
+
+
+#### `test_pyarrow_io_helpers`
+
+```python
+test_pyarrow_io_helpers(self)
+```
+
+Schema conversion and compatibility checks used by _generate_pyarrow_table.
+
+
+#### `test_scan_planning_surface`
+
+```python
+test_scan_planning_surface(self)
+```
+
+Files under a foreign spec are resolved through scan planning and read back with ArrowScan.
+
+overwrite_partitions_data drops a task's file whole when its spec_id and partition record match the
+current spec and a touched partition, and otherwise reads it through ArrowScan for a copy-on-write
+rewrite (ORBITRA-908). overwrite_data_by_custom_columns always plans and reads this way.
+
+
+#### `test_transaction_autocommit_attributes`
+
+```python
+test_transaction_autocommit_attributes(self)
+```
+
+_set_transaction_auto_commit forces one catalog commit per snapshot for Unity Catalog.
+
+
+#### `test_transaction_build_partition_predicate_signature`
+
+```python
+test_transaction_build_partition_predicate_signature(self)
+```
+
+overwrite_partitions_data builds its null-safe partition predicate through this helper.
+
+
+#### `test_transaction_commit_retry_surface`
+
+```python
+test_transaction_commit_retry_surface(self)
+```
+
+Concurrent CommitFailedException is retried inside pyiceberg; orbitra's @retry must stay idle.
+
+test_parallel_overwrite_data asserts that orbitra's decorator never fires, so it relies on
+commit_transaction re-planning registered snapshot producers against the refreshed table.
+
+
+#### `test_update_snapshot_overwrite_producer_surface`
+
+```python
+test_update_snapshot_overwrite_producer_surface(self)
+```
+
+The single atomic snapshot is staged through UpdateSnapshot.overwrite's producer.
+
+
+#### `test_upsert_util_create_match_filter`
+
+```python
+test_upsert_util_create_match_filter(self)
+```
+
+overwrite_data_by_custom_columns builds its prune filter through this helper.
+

@@ -1,0 +1,364 @@
+---
+title: table_schema
+sidebarTitle: table_schema
+---
+
+# `orbitra.lake.models.table_schema`
+
+## Functions
+
+### `validate_column_type`
+
+```python
+validate_column_type(value: str) -> str
+```
+
+
+Validate and normalize a column type string.
+
+Accepts the Iceberg primitive types as well as parameterized decimals in
+the form ``decimal(P, S)`` where ``1 <= P <= 38`` and ``0 <= S <= P``.
+Decimals are normalized to ``decimal(P, S)`` (with a space after the comma)
+to match pyiceberg's string representation so schema round-trips are stable.
+
+**Raises:**
+- `ValueError`: If the type is not a supported primitive or a valid decimal.
+
+
+### `validate_description`
+
+```python
+validate_description(value: Optional[str]) -> Optional[str]
+```
+
+
+Validate and normalize a table or column description.
+
+``None`` means "unmanaged" and is preserved as-is. A string is stripped, so a
+whitespace-only description normalizes to ``""``, which means "clear the
+description". Normalization is idempotent because ``_validate_table_schema``
+re-validates a schema through ``model_validate(model_dump())``.
+
+**Raises:**
+- `ValueError`: If the description is too long or contains control characters.
+
+
+### `validate_principal`
+
+```python
+validate_principal(value: str) -> str
+```
+
+
+Validate an Entra group display name used in a mask or row filter.
+
+The name becomes a SQL literal and a policy principal, so it must not be empty and must not
+contain control characters. These are SDK rules for SQL and policies; the only Entra rule
+checked here is the displayName length limit.
+
+**Raises:**
+- `ValueError`: If the name is empty, longer than 256 characters, or contains control characters.
+
+
+## Classes
+
+### `ColumnMask`
+
+
+Column mask for one column, applied by the catalog when a reader queries the table.
+
+The actions are the Iceberg REST ``read-restrictions`` actions, with the names and the semantics
+of the spec and without parameters. Every action keeps the column type, and NULL stays NULL,
+except in ``mask-to-fixed-value``:
+
+- ``replace-with-null`` (any type, optional columns only): NULL.
+- ``mask-to-fixed-value`` (any type): a constant: ``false``, ``0``, ``0.0``, ``"XXXXXXXX"``,
+  ``1970-01-01`` or ``1970-01-01T00:00:00``. NULL also becomes the constant.
+- ``mask-alphanum`` (``string``): a digit becomes ``n``; ``( ) , . - @`` stay; every other
+  code point becomes ``x``. The length stays the same.
+- ``show-first-4`` / ``show-last-4`` (``string``): keep the first or last 4 code points and
+  apply ``mask-alphanum`` to the rest. A value with 4 code points or fewer stays unchanged.
+- ``truncate-to-year`` / ``truncate-to-month`` (``date``, ``timestamp``): set the month, day
+  and time (or the day and time) to their minimum.
+- ``sha-256-global`` (``string``, ``int``, ``long``): deterministic SHA-256. A ``string``
+  becomes the 64-character lowercase hex digest of its UTF-8 bytes. An ``int``/``long`` is
+  hashed as 4/8 little-endian bytes, and the result is the first 4/8 bytes of the digest
+  read as little-endian. There is no salt: this is a pseudonym for joins, not anonymization,
+  and low-entropy values (tax ids, phone numbers, dates) come back by enumeration.
+- ``none``: remove any existing Orbitra masks from the column.
+
+The mask applies to every reader except ``except_groups`` and the exempt groups of the namespace
+(see ``TableSchemaWithPolicies``). The catalog applies the mask when it plans the scan: Iceberg
+REST clients do not get ``read-restrictions`` today.
+
+A new ``action`` or new ``except_groups`` on a column that has a mask change its policy. One call
+of ``create_or_update_table`` changes at most one existing policy; new masks and removals are free,
+and so is removing an ``except_groups`` entry (it only adds protection).
+
+**Attributes:**
+- `action`: The mask action.
+- `except_groups`: Entra group display names that read the column in clear.
+
+
+**Methods:**
+
+#### `ensure_groups_are_valid`
+
+```python
+ensure_groups_are_valid(cls, value: list[str]) -> list[str]
+```
+
+Ensure each group name is valid.
+
+
+### `RowAccess`
+
+
+One rule of a row filter: the groups in ``to`` read the rows that ``where`` selects.
+
+**Attributes:**
+- `to`: Entra group display names. Must not be empty.
+- `where`: Column name to the accepted values. The columns are joined with AND and the values
+of one column with IN. Empty means every row.
+
+
+**Methods:**
+
+#### `ensure_to_is_valid`
+
+```python
+ensure_to_is_valid(cls, value: list[str]) -> list[str]
+```
+
+Ensure the rule has at least one group and each group name is valid.
+
+
+#### `ensure_where_values_are_valid`
+
+```python
+ensure_where_values_are_valid(cls, value: dict[str, list[Union[str, int]]]) -> dict[str, list[Union[str, int]]]
+```
+
+Ensure each column has at least one value and no string value has control characters.
+
+
+### `RowFilter`
+
+
+Row filter for a table, applied by the catalog when a reader queries the table.
+
+The filter denies by default: a reader sees only the rows of the ``access`` rules that name one
+of their groups, and a reader that no rule names sees no row. Before you declare a filter on a
+table that people already read, list today's readers and add a rule for each of them.
+
+A reader that matches several rules sees the union of their rows. ``except_groups`` and the
+exempt groups of the namespace (see ``TableSchemaWithPolicies``) see every row. ``access=[]`` removes any
+existing Orbitra filters from the table.
+
+New ``access`` rules or new ``except_groups`` change the filter policy. One call of
+``create_or_update_table`` changes at most one existing policy, so they cannot share a call with a
+change of an existing mask. Removing an ``except_groups`` entry only adds protection and does not count.
+
+At least one rule must have ``where``. A rule without ``where`` gives its groups every row, and
+it can sit next to rules with ``where``. To only limit who reads the whole table, use table
+grants (``SELECT``, or ``additional_readers``) instead of a row filter.
+
+**Attributes:**
+- `access`: The rules, joined with OR. Accepts dicts or ``RowAccess`` objects.
+- `except_groups`: Entra group display names that see every row.
+
+
+**Methods:**
+
+#### `ensure_a_rule_has_where`
+
+```python
+ensure_a_rule_has_where(self) -> 'RowFilter'
+```
+
+Ensure at least one rule has ``where``.
+
+
+#### `ensure_groups_are_valid`
+
+```python
+ensure_groups_are_valid(cls, value: list[str]) -> list[str]
+```
+
+Ensure each group name is valid.
+
+
+### `ColumnSchema`
+
+
+Schema for a column in a table.
+
+**Attributes:**
+- `name`: The name of the column.
+- `type`: The data type of the column, represented as a string.
+Allowed types are "string", "int", "long", "float", "double",
+"boolean", "timestamp", "date", or a parameterized decimal in the
+form "decimal(P, S)" (e.g. "decimal(38, 18)").
+- `kind`: The kind of column,
+- "partition" for columns that are used for partitioning the table,
+- "regular" (default) for regular columns.
+- `exclude_from_hash`: If True, this column will be excluded from the row hash calculation.
+- `description`: A human-readable description of the column, stored as the
+Iceberg field ``doc``. ``None`` (the default) means the description is not managed
+by this schema and is left untouched; ``""`` clears any existing description.
+
+
+**Methods:**
+
+#### `ensure_description_is_valid`
+
+```python
+ensure_description_is_valid(cls, value: Optional[str]) -> Optional[str]
+```
+
+Validate and normalize the column description.
+
+
+#### `ensure_name_has_no_special_characters`
+
+```python
+ensure_name_has_no_special_characters(cls, value: str) -> str
+```
+
+Ensure the column name does not contain special characters.
+
+Only alphanumeric characters and underscores are allowed.
+
+
+#### `ensure_type_is_supported`
+
+```python
+ensure_type_is_supported(cls, value: str) -> str
+```
+
+Ensure the column type is a supported primitive or a valid decimal.
+
+
+### `TableSchema`
+
+
+Schema for a table in a database.
+
+**Attributes:**
+- `name`: The name of the table.
+- `columns`: A list of ColumnSchema objects representing the columns in the table.
+- `description`: A human-readable description of the table, stored as the
+Iceberg ``comment`` table property. ``None`` (the default) means the description is
+not managed by this schema and is left untouched; ``""`` clears any existing
+description.
+
+
+**Methods:**
+
+#### `ensure_description_is_valid`
+
+```python
+ensure_description_is_valid(cls, value: Optional[str]) -> Optional[str]
+```
+
+Validate and normalize the table description.
+
+
+#### `ensure_name_has_no_special_characters`
+
+```python
+ensure_name_has_no_special_characters(cls, value: str) -> str
+```
+
+Ensure the table name does not contain special characters.
+
+Only alphanumeric characters and underscores are allowed.
+
+
+#### `refuse_policy_parts`
+
+```python
+refuse_policy_parts(cls, data: Any) -> Any
+```
+
+Refuse a row filter or a column mask, so they are never dropped in silence: ``TableSchemaWithPolicies`` declares them.
+
+
+### `PolicyColumnSchema`
+
+
+A column of a ``TableSchemaWithPolicies``: a ``ColumnSchema`` with its column mask.
+
+**Attributes:**
+- `mask`: The column mask. ``None`` (the default) means the column has no
+mask\: if the table has an Orbitra mask on the column, the call fails until you declare
+it, or remove it with ``ColumnMask(action="none")``. See ``ColumnMask`` for the actions
+and the column types each accepts.
+
+
+**Methods:**
+
+#### `ensure_mask_fits_column`
+
+```python
+ensure_mask_fits_column(self) -> 'PolicyColumnSchema'
+```
+
+Ensure the mask action accepts the column type and the column is not a partition column.
+
+
+### `TableSchemaWithPolicies`
+
+
+A ``TableSchema`` with the complete declaration of its row filter and column masks.
+
+Use it with ``create_table`` and ``create_or_update_table`` to apply the policies to the catalog,
+and read it back with ``get_table_metadata(..., include_policies=True)``.
+The declaration is complete: ``mask=None`` means no mask and ``row_filter=None`` means no filter.
+If the table has an Orbitra mask or filter that the declaration does not mention, the call fails
+before any change. To remove one, declare ``ColumnMask(action="none")`` or ``RowFilter(access=[])``.
+
+Every policy of the table exempts the catalog admin group and the writer and manager groups of
+the namespace, plus its ``except_groups``, and nobody else: an owner or a user is never exempt.
+The names come from the tenant's published setting ``orbitra_lake_namespace_groups``; without it,
+applying policies fails. On the managed lake, a table created with a ``TableSchemaWithPolicies``
+belongs to the namespace manager group. Policies are written only on a table and a schema that the
+manager group owns, and only when no principal outside the exempt groups can write to the table: if
+another principal can, the call fails and the error names the grant to remove. Read grants are
+fine: their principals are subjects of the policies.
+
+The Orbitra hash (``__orbitra_hash__``, ``include_hash=True``) cannot be used on tables with access
+policies: the unsalted hash of the raw values would let a reader confirm a guessed masked value.
+SDK versions before this one do not know this rule and can add the hash to a table with masks, so
+every flow that writes to a table with access policies must use this SDK version or later.
+
+In JSON, ``"schema_kind": "table_with_policies"`` selects this class (see ``AnyTableSchema``).
+
+**Attributes:**
+- `schema_kind`: ``"table_with_policies"``.
+- `columns`: The columns, each with its mask. ``ColumnSchema`` objects
+are accepted and get ``mask=None``.
+- `row_filter`: The row filter, or None for no filter. The filter denies by
+default\: see ``RowFilter``. Filter columns must be ``string``, ``int`` or ``long`` (at most
+3), and a filter column cannot have a mask.
+
+
+**Methods:**
+
+#### `accept_plain_columns`
+
+```python
+accept_plain_columns(cls, value: Any) -> Any
+```
+
+Accept ``ColumnSchema`` objects (for example from ``get_table_metadata``) as columns without a mask.
+
+
+#### `ensure_policies_are_valid`
+
+```python
+ensure_policies_are_valid(self) -> 'TableSchemaWithPolicies'
+```
+
+Ensure there is no hash column, and that the masks and the row filter fit the columns and the SDK limits.
+

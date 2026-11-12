@@ -1,0 +1,370 @@
+---
+title: test_unity_rest
+sidebarTitle: test_unity_rest
+---
+
+# `orbitra.lake.tests.lake.test_unity_rest`
+
+
+Tests for the Unity Catalog REST transport and the policy calls built on it (HTTP mocked).
+
+## Classes
+
+### `TestTransport`
+
+
+requests.Session, token per call, error translation, pagination.
+
+
+**Methods:**
+
+#### `test_error_has_status_code_and_is_redacted`
+
+```python
+test_error_has_status_code_and_is_redacted(self)
+```
+
+Test that an error response becomes UnityCatalogApiError without the token in the message.
+
+
+#### `test_error_without_json`
+
+```python
+test_error_without_json(self)
+```
+
+Test an error body that is not JSON.
+
+
+#### `test_get_or_none`
+
+```python
+test_get_or_none(self)
+```
+
+Test that 404 is None and other errors raise.
+
+
+#### `test_network_error`
+
+```python
+test_network_error(self)
+```
+
+Test that a request failure becomes LakeError.
+
+
+#### `test_paginate`
+
+```python
+test_paginate(self)
+```
+
+Test that pages are followed with page_token.
+
+
+#### `test_rate_limit_gives_up`
+
+```python
+test_rate_limit_gives_up(self, monkeypatch)
+```
+
+Test that a request still limited after the last attempt raises UnityCatalogApiError with the 429.
+
+
+#### `test_rate_limit_is_retried`
+
+```python
+test_rate_limit_is_retried(self, monkeypatch)
+```
+
+Test that HTTP 429 (seen in dev on GET /functions) and 503 are retried with backoff, honoring Retry-After.
+
+
+#### `test_redact`
+
+```python
+test_redact(self)
+```
+
+Test the three redactions.
+
+
+#### `test_retry_false_sends_once`
+
+```python
+test_retry_false_sends_once(self, monkeypatch)
+```
+
+Test that retry=False sends the request once and raises the 503, with no wait.
+
+
+#### `test_token_is_read_for_each_call`
+
+```python
+test_token_is_read_for_each_call(self)
+```
+
+Test that the Authorization header uses the token current at each call.
+
+
+### `TestFunctionInfo`
+
+
+FunctionSpec to FunctionInfo and back.
+
+
+**Methods:**
+
+#### `test_round_trip`
+
+```python
+test_round_trip(self, sdk_type: str)
+```
+
+Test that a spec survives FunctionInfo and back, hash included.
+
+
+#### `test_shape`
+
+```python
+test_shape(self)
+```
+
+Test the fields proven by the ORBITRA-1016 gate.
+
+
+### `TestPolicyCalls`
+
+
+The policy calls of UnityDB, with the transport mocked.
+
+
+**Methods:**
+
+#### `test_a_403_on_the_owner_patch_is_the_manager_error`
+
+```python
+test_a_403_on_the_owner_patch_is_the_manager_error(self, first: Any)
+```
+
+Test that a 403 on the owner PATCH is the manager error, after a create and after "already exists".
+
+
+#### `test_a_function_create_whose_answer_is_lost_gives_it_to_the_owner`
+
+```python
+test_a_function_create_whose_answer_is_lost_gives_it_to_the_owner(self, monkeypatch)
+```
+
+Test a POST applied but answered 503: the retry gets "already exists", and the UDF still goes to the owner.
+
+
+#### `test_create_function_409_with_another_owner`
+
+```python
+test_create_function_409_with_another_owner(self)
+```
+
+Test that an existing equal UDF with another owner is given to the owner, as after a create.
+
+
+#### `test_create_function_409_with_equal_definition`
+
+```python
+test_create_function_409_with_equal_definition(self)
+```
+
+Test that an existing UDF with the same definition and the right owner counts as created, with no PATCH.
+
+
+#### `test_create_function_409_with_other_definition`
+
+```python
+test_create_function_409_with_other_definition(self)
+```
+
+Test that an existing UDF with another definition is a LakePolicyError.
+
+
+#### `test_create_function_409_with_other_return_type`
+
+```python
+test_create_function_409_with_other_return_type(self)
+```
+
+Test that the 409 check compares the whole spec: same body, other return type, is a LakePolicyError.
+
+
+#### `test_create_function_sets_the_owner`
+
+```python
+test_create_function_sets_the_owner(self)
+```
+
+Test POST /functions, then PATCH of the owner.
+
+
+#### `test_deletes_ignore_404`
+
+```python
+test_deletes_ignore_404(self, method: str)
+```
+
+Test that deleting something already gone succeeds.
+
+
+#### `test_drop_lock_is_never_retried`
+
+```python
+test_drop_lock_is_never_retried(self)
+```
+
+Test that the lock DELETE asks the transport for one attempt, and gives its 503 to the caller.
+
+
+#### `test_existing_object_answers`
+
+```python
+test_existing_object_answers(self, error: UnityCatalogApiError)
+```
+
+Test that both 'already exists' answers count: 409, and the 400 RESOURCE_ALREADY_EXISTS that dev returns for a function.
+
+
+#### `test_lock_create_raises_the_api_error`
+
+```python
+test_lock_create_raises_the_api_error(self)
+```
+
+Test that create_lock gives the raw 403 to TableLock, which turns it into the manager error.
+
+
+#### `test_other_calls_retry_503`
+
+```python
+test_other_calls_retry_503(self, monkeypatch, call: Callable[[UnityPolicyClient], Any])
+```
+
+Test that every call but the lock DELETE keeps the transport retries: a 503, then a 200, succeeds.
+
+
+#### `test_policy_post_409_is_refused`
+
+```python
+test_policy_post_409_is_refused(self, error: UnityCatalogApiError)
+```
+
+Test that a POST that finds the name taken raises and never becomes a PATCH of a policy the planner did not recognize.
+
+
+#### `test_reads_translate_403`
+
+```python
+test_reads_translate_403(self)
+```
+
+Test that a read without READ_METADATA is a LakePolicyError that names the grant.
+
+
+#### `test_table_policies_read_tags_by_the_stored_column_name`
+
+```python
+test_table_policies_read_tags_by_the_stored_column_name(self)
+```
+
+Test that get_table_policies reads the tags with the name Unity Catalog stores, and skips columns not in the table.
+
+
+#### `test_tag_patch_and_409`
+
+```python
+test_tag_patch_and_409(self)
+```
+
+Test the tag PATCH path with update_mask=tag_value, POST 409 falling back to PATCH, and the column name kept as given.
+
+
+#### `test_tags_of_an_existing_column_404_is_an_error`
+
+```python
+test_tags_of_an_existing_column_404_is_an_error(self)
+```
+
+Test that a 404 on the tags of a column of the table raises, instead of reading as no tags.
+
+
+#### `test_write_error_translation`
+
+```python
+test_write_error_translation(self, error: UnityCatalogApiError, action: str, expected: str)
+```
+
+Test each friendly translation.
+
+
+### `TestLockRelease`
+
+
+The lock release with the real transport and TableLock, the HTTP session mocked.
+
+
+**Methods:**
+
+#### `test_a_release_answered_503_is_not_retried`
+
+```python
+test_a_release_answered_503_is_not_retried(self, monkeypatch, caplog)
+```
+
+Test bohr's thread 15872 finding: A's DELETE is applied but answered 503, and B takes the lock during the backoff.
+
+A retry of A's DELETE would delete B's lock, and C could then take it while B still holds it.
+
+
+#### `test_a_release_answered_503_that_was_not_applied_is_logged`
+
+```python
+test_a_release_answered_503_that_was_not_applied_is_logged(self, caplog)
+```
+
+Test that a DELETE answered 503 and not applied is not retried either: the lock stays for a manual drop, and the log says so.
+
+
+### `TestLockAcquire`
+
+
+The lock acquire with the real transport and TableLock, the HTTP session mocked.
+
+
+**Methods:**
+
+#### `test_a_403_is_the_manager_error_with_no_read`
+
+```python
+test_a_403_is_the_manager_error_with_no_read(self)
+```
+
+Test that a 403 on the lock POST is the manager error at once: one POST, no read of the lock, no retry.
+
+#### `test_a_lock_create_answered_503_then_429_is_held_and_released`
+
+```python
+test_a_lock_create_answered_503_then_429_is_held_and_released(self)
+```
+
+Test bohr's thread 15878 finding: the first POST creates the lock but answers 503, and the five retries answer 429.
+
+The transport raises the last 429. The run reads the holder, finds its own id, holds the lock, and releases it with one DELETE.
+
+
+#### `test_an_error_status_without_a_lock_of_this_run_raises`
+
+```python
+test_an_error_status_without_a_lock_of_this_run_raises(self, answers: list[tuple[int, bool]], other_holder: bool, posts: int)
+```
+
+Test that a 429 or another 4xx raises as before when the read shows no lock of this run, and leaves another run's lock alone.
+
+

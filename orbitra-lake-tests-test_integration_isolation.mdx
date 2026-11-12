@@ -1,0 +1,131 @@
+---
+title: test_integration_isolation
+sidebarTitle: test_integration_isolation
+---
+
+# `orbitra.lake.tests.test_integration_isolation`
+
+
+Unit tests of the prefix isolation of the integration tests. They need no backend and run in every test run.
+
+## Functions
+
+### `janitor_client`
+
+```python
+janitor_client(tmp_path, monkeypatch) -> Iterator[Any]
+```
+
+
+A client whose DBService runs on the local catalog with a fake Unity Catalog; no run directories.
+
+
+### `test_isolated_client_locks_the_prefixed_table`
+
+```python
+test_isolated_client_locks_the_prefixed_table()
+```
+
+
+The lock and the policy calls use the full name of the prefixed table, so two classes never share a lock.
+
+
+### `test_janitor_leaves_live_runs_and_other_tables_alone`
+
+```python
+test_janitor_leaves_live_runs_and_other_tables_alone(janitor_client)
+```
+
+
+The table, lock and filter UDFs of a live run and of a table outside the tests stay, also beside a dead run.
+
+
+### `test_janitor_never_deletes_mask_udfs`
+
+```python
+test_janitor_never_deletes_mask_udfs(janitor_client)
+```
+
+
+The shared mask UDFs stay when the only table that uses them is a dead run's.
+
+
+### `test_janitor_removes_a_dead_runs_table_with_its_filter_and_held_lock`
+
+```python
+test_janitor_removes_a_dead_runs_table_with_its_filter_and_held_lock(janitor_client)
+```
+
+
+A dead run's table goes with its lock, the filter UDF of its policy and a filter UDF that no policy calls.
+
+
+### `test_janitor_skips_tables_that_another_run_removed_first`
+
+```python
+test_janitor_skips_tables_that_another_run_removed_first()
+```
+
+
+Two runs that start together list the same dead run; the second drop finds no table and the run still starts.
+
+
+### `test_proxy_covers_every_catalog_call_of_the_sdk`
+
+```python
+test_proxy_covers_every_catalog_call_of_the_sdk()
+```
+
+
+A catalog call that the proxy does not know would reach a table without the prefix in the integration tests.
+
+
+### `test_proxy_prefixes_table_identifiers`
+
+```python
+test_proxy_prefixes_table_identifiers()
+```
+
+
+The wrapped catalog sees the prefixed name; the caller sees plain names.
+
+
+### `test_proxy_refuses_unknown_catalog_methods`
+
+```python
+test_proxy_refuses_unknown_catalog_methods()
+```
+
+
+A method outside ISOLATED and PASS_THROUGH fails instead of using the plain name.
+
+
+### `test_proxy_retries_unity_rejections_of_concurrent_creates`
+
+```python
+test_proxy_retries_unity_rejections_of_concurrent_creates()
+```
+
+
+Unity's 500 ErrorCode 2012 on concurrent creates is retried.
+
+
+### `test_run_stops_when_a_renewal_blocks_longer_than_the_lease`
+
+```python
+test_run_stops_when_a_renewal_blocks_longer_than_the_lease()
+```
+
+
+A renew() call that hangs on the network does not delay the stop: the watchdog does not wait for it.
+
+### `test_run_stops_when_the_lease_cannot_be_renewed`
+
+```python
+test_run_stops_when_the_lease_cannot_be_renewed()
+```
+
+
+A transport error on every renewal stops the run before the lease can expire, instead of a silent renewer exit.
+
+

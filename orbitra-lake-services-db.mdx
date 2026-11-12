@@ -1,0 +1,531 @@
+---
+title: db
+sidebarTitle: db
+---
+
+# `orbitra.lake.services.db`
+
+## Classes
+
+### `DBService`
+
+
+Service class for managing database operations.
+
+This class handles input validation, data conversion, and interaction with the BaseDB interface.
+
+**Attributes:**
+- `db`: An instance of a database interface that implements BaseDB.
+
+
+**Methods:**
+
+#### `add_column_to_table`
+
+```python
+add_column_to_table(self, namespace: str, table_name: str, column: str, column_type: str) -> TableSchema
+```
+
+Add a new column to an existing table.
+
+**Args:**
+- `namespace`: The namespace where the table is located.
+- `table_name`: The name of the table to add the column to.
+- `column`: The name of the new column to add.
+- `column_type`: The data type of the new column. A primitive type or a "decimal(P, S)" string.
+
+**Returns:**
+- The updated schema of the table after adding the new column.
+
+**Raises:**
+- `LakeError`: If the column is invalid, already exists or if the table does not exist.
+
+
+#### `append_data`
+
+```python
+append_data(self, namespace: str, table_name: str, df: pd.DataFrame) -> AppendTableDataResponse
+```
+
+Append data to a table without overwriting existing rows.
+
+**Args:**
+- `namespace`: The namespace where the table is located.
+- `table_name`: The name of the table to append data to.
+- `df`: The DataFrame containing the data to append.
+
+**Returns:**
+- A response object with inserted_rows and operation_id.
+
+**Raises:**
+- `LakeError`: If the table does not exist or if the DataFrame contains invalid data.
+
+
+#### `close`
+
+```python
+close(self) -> None
+```
+
+Close any open database connections.
+
+#### `create_namespace`
+
+```python
+create_namespace(self, namespace: str) -> str
+```
+
+Create a new namespace in the database.
+
+**Args:**
+- `namespace`: The name of the namespace to create.
+
+**Returns:**
+- The name of the created namespace.
+
+**Raises:**
+- `LakeError`: If the namespace already exists.
+
+
+#### `create_or_update_table`
+
+```python
+create_or_update_table(self, namespace: str, table: AnyTableSchema, allow_column_removal: bool = False, include_hash: bool = False) -> TableSchema
+```
+
+Create or update a table.
+
+This method will create the table if it does not exist, or update it if it does.
+Updates are only allowed in regular columns. Partition columns are not allowed to be updated.
+A table that it creates goes to the namespace manager group on Unity Catalog (see ``create_table``);
+an existing table keeps its owner.
+
+Table and column descriptions are reconciled to match the declared schema: a description of
+``None`` is left untouched, ``""`` clears it and any other value sets it.
+
+A ``TableSchema`` never reads or changes row filters and column masks. A ``TableSchemaWithPolicies``
+is the complete declaration of them, on Unity Catalog: a policy that the table has and the
+declaration omits raises ``LakePolicyError`` before any change; ``ColumnMask(action="none")`` and
+``RowFilter(access=[])`` remove one. When the declaration equals the applied policies, no policy is
+written, no lock is taken, and any caller succeeds (column additions and description updates still write).
+
+With a ``TableSchemaWithPolicies``, the lock of the table (the function ``__orbitra_lock_*`` in the
+schema) is taken first, and everything is read and decided again under it, when the call changes
+the policies or removes or retypes a column. Only the
+namespace manager group can take it: anyone else gets ``LakePolicyError`` before any change. The
+call waits up to 2 minutes for another run. A lock left by a run that crashed never expires; the
+error names its holder and the ``DROP FUNCTION`` statement that a namespace manager runs to remove it.
+
+Rules on Unity Catalog:
+
+- One call changes at most one existing policy (its UDF, its columns or a new ``except_groups``
+  entry). New policies and removals are free, and so is removing an ``except_groups`` entry (it
+  only adds protection). Make one call per change.
+- Every policy exempts the catalog admin group and the writer and manager groups of the
+  namespace, plus its ``except_groups``; nobody else, owners and users included. The group names
+  come from the published setting ``orbitra_lake_namespace_groups``: without it the call raises
+  ``LakePolicyError`` before any change.
+- A call that writes policies, or removes or retypes a column, refuses, before any change, a table or a schema
+  that does not belong to the namespace manager group (the error names the ``ALTER ... SET OWNER`` to run; the
+  SDK never transfers an existing table), and a principal outside those three groups with MODIFY or
+  ALL_PRIVILEGES on the table, directly or through the schema or the catalog: remove such a grant, or move the
+  principal into a namespace group. SELECT grants are fine.
+- Order: column additions and type changes, new tags, UDFs and policies, the one change, removed
+  policies and tags, column removals.
+- Unity Catalog refuses to remove a column with a governed tag: remove the mask or the filter of
+  the column in one call, then the column in a second call.
+- The Orbitra hash cannot be used on tables with access policies: a ``TableSchemaWithPolicies`` call
+  refuses ``include_hash=True`` and a table that has ``__orbitra_hash__``, before any write.
+- A ``TableSchema`` takes no lock and reads no policy, except that adding ``__orbitra_hash__`` to an
+  existing table reads the Orbitra tags of the table before and after the add: it refuses when there
+  are any, and drops the new hash again if a policy appeared in between. Removing a column with an
+  Orbitra policy raises ``LakePolicyError`` (Unity Catalog refuses it, nothing changes). A type change
+  keeps the policy on the UDF of the old type until a ``TableSchemaWithPolicies`` moves it.
+- Residual risk: for a few milliseconds, between a writer's hash add and its second read, a table that
+  just got its first policy can have an unmasked hash; and SDK versions before this one do not know
+  these rules. Every flow that writes to a table with access policies must use this SDK version or later.
+
+**Args:**
+- `namespace`: The namespace where the table is located.
+- `table`: The schema of the table to create or update\: a ``TableSchema``, or a
+``TableSchemaWithPolicies`` to reconcile its row filter and column masks too.
+- `allow_column_removal`: Whether to allow column removal.
+- `include_hash`: Whether to include the __orbitra_hash__ column. Defaults to False. Refused
+with a ``TableSchemaWithPolicies``.
+
+**Returns:**
+- The updated schema of the table after creating or updating it, without policies.
+
+**Raises:**
+- `LakeError`: If there are changes in partition columns, or if a column is removed and allow_column_removal is False.
+When the call creates the table on Unity Catalog, also as in ``create_table``\: the tenant does not
+publish the groups of the namespace, or the new table could not be given to the namespace manager group.
+- `LakePolicyError`: If the row filter or a column mask cannot be applied, before any change\: the caller is
+not in the namespace manager group, the declaration omits a policy of the table, the call changes
+more than one existing policy, a column to remove has an Orbitra tag, the tenant does not publish
+the groups of the namespace, the table or the schema does not belong to the manager group, a
+principal outside the exempt groups can modify the table, an Orbitra UDF that the call
+uses or replaces was changed by hand, a policy that the SDK does not own conflicts, the tenant lacks
+the governed tags of the lake module, the call uses the Orbitra hash, or another run holds the lock
+of the table for longer than the wait. After the writes, if
+``__orbitra_hash__`` appeared meanwhile (a namespace manager must drop it). With a ``TableSchema``\: a
+column to remove has an Orbitra policy (the columns before it in the call are removed), or
+``__orbitra_hash__`` is added to a table with Orbitra tags (before the add, or after it\: then the
+new hash column is dropped again).
+
+
+#### `create_table`
+
+```python
+create_table(self, namespace: str, table: AnyTableSchema, include_hash: bool = False) -> TableSchema
+```
+
+Create a new table in the specified namespace.
+
+With a ``TableSchemaWithPolicies`` that declares a row filter or a column mask, on Unity Catalog,
+the call takes the lock of the table first (only the namespace manager group can), then
+creates the table empty, gives it to the namespace manager group, and creates its tags, UDFs and
+policies, so the first write already lands behind the policies. If the policies fail after the
+table is created, the empty table stays; run ``create_or_update_table`` with the same schema to
+finish (if the table did not reach the manager group, that call names the ``ALTER TABLE`` to run
+first). The Orbitra hash cannot be used with a ``TableSchemaWithPolicies``.
+
+On Unity Catalog, every table that the call creates goes to the namespace manager group right after
+the physical create, with a ``TableSchema`` too, so a later ``TableSchemaWithPolicies`` on it needs
+no ``ALTER TABLE``. The group name comes from the published setting ``orbitra_lake_namespace_groups``,
+which Unity Catalog mode requires: without it the create is refused before anything is created. An
+existing table is never transferred.
+
+**Args:**
+- `namespace`: The namespace where the table should be created.
+- `table`: The schema of the table to create\: a ``TableSchema``, or a
+``TableSchemaWithPolicies`` to apply its row filter and column masks too.
+- `include_hash`: Whether to include the __orbitra_hash__ column. Defaults to False. Refused
+with a ``TableSchemaWithPolicies``.
+
+**Returns:**
+- The schema of the created table, without policies; use
+``get_table_metadata(..., include_policies=True)`` to read them back.
+
+**Raises:**
+- `LakeError`: If the table already exists or if the namespace does not exist. On Unity Catalog, also
+when the tenant does not publish the groups of the namespace (before anything is created), and
+when the table was created but could not be given to the namespace manager group (for example a
+403\: the caller is not in the group)\: the table stays, with its creator as the owner, and the error
+names the ``ALTER TABLE ... SET OWNER TO`` to run.
+- `LakePolicyError`: If the row filter or a column mask cannot be applied, if the caller is not in
+the namespace manager group, if another run holds the lock of the table for longer than the wait,
+or if a ``TableSchemaWithPolicies`` comes with ``include_hash=True`` (before anything is created).
+Before anything is created, also when the tenant does not publish the groups of the
+namespace, the schema does not belong to the manager group, or a principal outside the
+exempt groups can modify the schema (see ``TableSchemaWithPolicies``).
+
+
+#### `delete_data`
+
+```python
+delete_data(self, namespace: str, table_name: str, partition_filters: list[PartitionFilter]) -> str
+```
+
+Delete data from a table based on partition filters.
+
+This method deletes data from a table based on the provided partition filters.
+Partition filters are combined with an AND operation.
+If the table has no partition columns, it deletes the entire table data.
+
+**Args:**
+- `namespace`: The namespace where the table is located.
+- `table_name`: The name of the table to delete data from.
+- `partition_filters`: A list of partition filters to apply for the delete operation.
+Must be empty if the table has no partition columns.
+
+**Returns:**
+- An operation ID for tracking the delete operation.
+
+**Raises:**
+- `LakeError`: If the table does not exist or if the partition filters are invalid.
+
+
+#### `drop_table`
+
+```python
+drop_table(self, namespace: str, table_name: str) -> bool
+```
+
+Drop a table from the given namespace.
+
+On Unity Catalog, the call takes the lock of the table first (only the namespace manager group
+can), then drops the table and the UDF of its Orbitra row filter.
+
+**Args:**
+- `namespace`: The namespace where the table resides.
+- `table_name`: The name of the table to drop.
+
+**Returns:**
+- True if the table was dropped successfully.
+
+**Raises:**
+- `LakeError`: If the table or namespace does not exist.
+- `LakePolicyError`: If the caller is not in the namespace manager group, or if another run holds
+the lock of the table for longer than the wait.
+
+
+#### `get_sql_dialect`
+
+```python
+get_sql_dialect(self, engine: Literal['local', 'remote'] = 'local') -> str
+```
+
+Return the sqlglot dialect string for the given engine.
+
+**Args:**
+- `engine`: The engine to get the dialect for.
+
+**Returns:**
+- The sqlglot dialect string (e.g. "duckdb", "databricks").
+
+
+#### `get_table_data`
+
+```python
+get_table_data(self, namespace: str, table_name: str, scan_filters: list[Filter], limit: Optional[int] = None, selected_fields: Optional[list[str]] = None) -> pd.DataFrame
+```
+
+Retrieve data from a table based on scan filters.
+
+This method retrieves data from a table based on the provided scan filters.
+Scan filters are combined with an AND operation.
+If an empty list of scan filters is provided, it retrieves all data from the table.
+
+On Unity Catalog, a reader that a row filter or column mask of the table applies to cannot read it
+here: Unity Catalog gives such a reader no storage credential. Use ``run_query(..., engine="remote")``.
+The exempt groups (see ``TableSchemaWithPolicies``) read here as before.
+
+**Args:**
+- `namespace`: The namespace where the table is located.
+- `table_name`: The name of the table to retrieve data from.
+- `scan_filters`: A list of column filters to apply for the query.
+- `limit`: The maximum number of rows to retrieve, defaults to None for all rows.
+- `selected_fields`: The columns to project from the table. Defaults to None,
+which retrieves all columns.
+
+**Returns:**
+- pd.DataFrame: A DataFrame containing the data retrieved from the table.
+
+**Raises:**
+- `LakeError`: If the table does not exist or if the scan filters are invalid.
+- `LakePolicyError`: If a row filter or column mask of the table applies to the caller.
+
+
+#### `get_table_metadata`
+
+```python
+get_table_metadata(self, namespace: str, table_name: str, include_policies: Literal[False] = False) -> TableSchema
+```
+
+#### `get_table_metadata`
+
+```python
+get_table_metadata(self, namespace: str, table_name: str, include_policies: Literal[True]) -> TableSchemaWithPolicies
+```
+
+#### `get_table_metadata`
+
+```python
+get_table_metadata(self, namespace: str, table_name: str, include_policies: bool = False) -> TableSchema
+```
+
+#### `get_table_metadata`
+
+```python
+get_table_metadata(self, namespace: str, table_name: str, include_policies: bool = False) -> TableSchema
+```
+
+Retrieve the metadata of a table.
+
+**Args:**
+- `namespace`: The namespace where the table is located.
+- `table_name`: The name of the table to retrieve metadata for.
+- `include_policies`: Return a ``TableSchemaWithPolicies`` with ``mask`` and ``row_filter``
+rebuilt from the Orbitra policies applied in Unity Catalog. Defaults to False, which
+returns a ``TableSchema``. Objects that do not match the current schema are left out
+with a warning. The local backend has no policies\: every part is None.
+
+**Returns:**
+- The schema of the table if it exists (a ``TableSchemaWithPolicies`` with ``include_policies``).
+
+**Raises:**
+- `LakeError`: If the table does not exist.
+- `LakePolicyError`: If ``include_policies`` is set and the caller cannot read the policies.
+
+
+#### `list_namespaces`
+
+```python
+list_namespaces(self) -> list[str]
+```
+
+List all namespaces in the database.
+
+**Returns:**
+- list\[str]: A list of namespace names.
+
+
+#### `list_tables`
+
+```python
+list_tables(self, namespace: str) -> list[str]
+```
+
+List all tables in the specified namespace.
+
+**Args:**
+- `namespace`: The namespace to list tables from.
+
+**Returns:**
+- list\[str]: A list of table names in the specified namespace.
+
+**Raises:**
+- `LakeError`: If the namespace does not exist.
+
+
+#### `overwrite_data`
+
+```python
+overwrite_data(self, namespace: str, table_name: str, df: pd.DataFrame, check_hash: bool = False) -> OverwriteTableDataResponse
+```
+
+Overwrite partitions data in a table.
+
+This method overwrites the data in a table based on the partition columns present in the DataFrame.
+If the table has no partition columns, it overwrites the entire table data.
+
+**Args:**
+- `namespace`: The namespace where the table is located.
+- `table_name`: The name of the table to overwrite data in.
+- `df`: The DataFrame containing the data to overwrite in the table.
+- `check_hash`: If True, uses hash-based change detection to only overwrite data
+when hashes differ. Requires the table to have a hash column. Defaults to False.
+
+**Returns:**
+- A response object containing information about the modified partitions and inserted rows.
+
+**Raises:**
+- `LakeError`: If the table does not exist, if the DataFrame contains invalid data,
+or if check_hash is True and the table has no hash column.
+
+
+#### `overwrite_data_by_custom_columns`
+
+```python
+overwrite_data_by_custom_columns(self, namespace: str, table_name: str, custom_columns: list[str], df: pd.DataFrame, suppress_warnings: bool = False, check_hash: bool = False) -> OverwriteDataByCustomColumnsResponse
+```
+
+Overwrite data into a table by custom columns.
+
+This method overwrites data into a table based on the provided custom columns and data.
+It will delete data based on the values in the custom columns and then insert the given data frame.
+
+**Args:**
+- `namespace`: The namespace where the table is located.
+- `table_name`: The name of the table to overwrite data into.
+- `custom_columns`: A list of columns to use as custom columns.
+- `df`: The DataFrame containing the data to overwrite.
+- `suppress_warnings`: If True, silences the warning emitted when the custom columns do not
+cover the table's partition columns and the overwrite scans the whole table. Defaults to False.
+- `check_hash`: If True, uses hash-based change detection to only overwrite the groups of custom column
+values whose hashes differ. Requires the table to have a hash column. Defaults to False.
+
+**Returns:**
+- A response object containing information about the modified custom values and inserted rows.
+
+**Raises:**
+- `LakeError`: If the table does not exist, if the custom columns are invalid,
+or if check_hash is True and the table has no hash column.
+
+
+#### `refresh_token`
+
+```python
+refresh_token(self, token: str) -> None
+```
+
+Refresh the authentication token for the database.
+
+**Args:**
+- `token`: The new authentication token to set.
+
+
+#### `remove_column_from_table`
+
+```python
+remove_column_from_table(self, namespace: str, table_name: str, column: str) -> TableSchema
+```
+
+Remove a column from an existing table.
+
+**Args:**
+- `namespace`: The namespace where the table is located.
+- `table_name`: The name of the table to remove the column from.
+- `column`: The name of the column to remove.
+
+**Returns:**
+- The updated schema of the table after removing the column.
+
+**Raises:**
+- `LakeError`: If the table or column does not exist or if it is a reserved column.
+- `LakePolicyError`: If the column has an Orbitra row filter or column mask\: Unity Catalog refuses to
+remove a column with a governed tag. Remove the policy first with a TableSchemaWithPolicies.
+
+
+#### `run_query`
+
+```python
+run_query(self, namespace: str, query: str, engine: Literal['local', 'remote'] = 'local') -> pd.DataFrame
+```
+
+Run a query using the selected environment as query engine.
+
+On Unity Catalog, a reader that a row filter or column mask applies to reads that table only with
+``engine="remote"`` (the SQL warehouse applies the policies). With ``engine="local"``, such a query
+raises ``LakePolicyError`` that names the table.
+
+**Args:**
+- `namespace`: The namespace to run the query in.
+- `query`: The query to run.
+- `engine`: The engine to use for the query.
+
+**Returns:**
+- pd.DataFrame: A DataFrame containing the retrieved data.
+
+**Raises:**
+- `LakeError`: If the query is invalid or if the engine is not supported.
+- `LakePolicyError`: With ``engine="local"``, if a table of the query has a row filter or column mask
+that applies to the caller. With ``engine="remote"``, if more than one row filter, or more than
+one mask on a column, applies to the caller.
+
+
+#### `update_column_type`
+
+```python
+update_column_type(self, namespace: str, table_name: str, column: str, column_type: str) -> TableSchema
+```
+
+Update the type of a column in an existing table.
+
+On Unity Catalog, a column with a mask or a row filter keeps it: the policy calls the UDF of the old
+type until a TableSchemaWithPolicies moves it (see ``create_or_update_table``).
+
+**Args:**
+- `namespace`: The namespace where the table is located.
+- `table_name`: The name of the table to update the column type in.
+- `column`: The name of the column to update the type of.
+- `column_type`: The new type of the column. A primitive type or a "decimal(P, S)" string.
+
+**Returns:**
+- The updated schema of the table after updating the column type.
+
+**Raises:**
+- `LakeError`: If the table or column does not exist or if it is a reserved column.
+
+

@@ -1,0 +1,79 @@
+---
+title: test_catalog_read_retry
+sidebarTitle: test_catalog_read_retry
+---
+
+# `orbitra.lake.tests.lake.test_catalog_read_retry`
+
+## Classes
+
+### `TestCatalogReadRetry`
+
+
+A transient failure loading a table is repeated instead of failing the whole operation.
+
+
+**Methods:**
+
+#### `no_sleep`
+
+```python
+no_sleep(self, monkeypatch)
+```
+
+Skip the retry sleeps and use the decorator's own retry count.
+
+
+#### `test_commit_errors_are_not_caught_by_the_read_retry`
+
+```python
+test_commit_errors_are_not_caught_by_the_read_retry(self)
+```
+
+Commit errors are left to the write retry of the overwrite_* methods.
+
+#### `test_get_table_metadata_is_retried`
+
+```python
+test_get_table_metadata_is_retried(self)
+```
+
+get_table_metadata loads the table itself, so it carries the same retry.
+
+
+#### `test_load_table_is_retried_after_a_transient_failure`
+
+```python
+test_load_table_is_retried_after_a_transient_failure(self, error, no_sleep)
+```
+
+A 5xx, a read timeout or a dropped connection on loadTable is repeated, and the next attempt wins.
+
+
+#### `test_missing_table_is_not_retried`
+
+```python
+test_missing_table_is_not_retried(self)
+```
+
+A missing table is a LakeError, not a transient failure, and fails on the first attempt.
+
+
+#### `test_persistent_failure_is_raised_after_the_retries`
+
+```python
+test_persistent_failure_is_raised_after_the_retries(self)
+```
+
+A failure that does not go away is raised once the retries are spent.
+
+
+#### `test_table_exists_is_retried_after_a_transient_failure`
+
+```python
+test_table_exists_is_retried_after_a_transient_failure(self)
+```
+
+The table existence check, made before loadTable, is repeated too.
+
+

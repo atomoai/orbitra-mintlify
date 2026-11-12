@@ -1,0 +1,68 @@
+---
+title: models
+sidebarTitle: models
+---
+
+# `orbitra.commons.email.models`
+
+## Classes
+
+### `EmailBody`
+
+
+Represents the body of an email, mapping the 'ItemBody' object from the Graph API.
+
+**Attributes:**
+- `content_type`: The format of the body content. Either ``"Text"`` or ``"HTML"``,
+as returned by the Graph API.
+- `content`: The full body text or HTML markup of the email.
+
+
+### `EmailAddress`
+
+
+Represents an email address, mapping the 'emailAddress' object from the Graph API.
+
+**Attributes:**
+- `address`: The email address (e.g. ``"user@example.com"``).
+- `name`: The display name associated with the address (e.g. ``"John Doe"``).
+May be ``None`` when not provided by the API.
+
+
+### `EmailAttachment`
+
+
+Represents a file attachment on an email, as returned by the Graph API.
+
+**Attributes:**
+- `id`: The unique identifier of the attachment in the Graph API.
+- `name`: The file name of the attachment (e.g. ``"report.pdf"``).
+- `content_type`: The MIME type of the attachment (e.g. ``"application/pdf"``).
+- `size`: The size of the attachment in bytes.
+- `content_bytes`: The decoded binary content of the attachment.
+
+
+### `EmailDetail`
+
+
+Represents a complete email retrieved from the Graph API.
+
+**Attributes:**
+- `id`: The unique identifier (hash) of the email in the Graph API.
+- `subject`: The subject line of the email.
+- `sender`: The address and display name of the sender.
+- `received_date_time`: When the email was received, as a timezone-aware
+``datetime`` (UTC). ``None`` if the field is absent or cannot be parsed.
+- `has_attachments`: ``True`` if the email has one or more attachments.
+- `is_read`: ``True`` if the email has been marked as read.
+- `to_recipients`: List of primary (To) recipients.
+- `cc_recipients`: List of CC recipients.
+- `bcc_recipients`: List of BCC recipients.
+- `attachments`: List of attachment objects.
+- `state`: The Orbitra
+processing state tag stored in the email's categories. ``None`` if no state has been set.
+- `body`: The body of the email, containing content and its format.
+``None`` when the body is not included in the API response.
+- `web_link`: A direct URL to open the email in Outlook Web. ``None`` if not
+returned by the API.
+

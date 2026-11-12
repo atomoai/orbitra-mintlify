@@ -1,0 +1,111 @@
+---
+title: flows_models
+sidebarTitle: flows_models
+---
+
+# `orbitra.flows.flows_models`
+
+## Functions
+
+### `to_json`
+
+```python
+to_json(info: Any) -> dict
+```
+
+
+Convert one of the models in this module to a JSON-ready dict.
+
+UUIDs as strings, UTC datetimes ending in "Z", enums as values.
+
+**Args:**
+- `info`: A DeploymentInfo or FlowRunInfo.
+
+**Returns:**
+- The model as a dict of JSON types, ready for `json.dumps`.
+
+
+## Classes
+
+### `DeploymentInfo`
+
+
+A deployment registered in Orbitra Flows.
+
+**Attributes:**
+- `id`: The Prefect deployment ID.
+- `name`: The full name in the format &lt;FLOW_NAME&gt;/&lt;DEPLOYMENT_NAME&gt;.
+- `flow_name`: The name of the flow the deployment belongs to.
+- `deployment_name`: The name of the deployment, without the flow name.
+- `paused`: Whether the deployment is paused.
+- `tags`: The deployment tags.
+- `work_pool_name`: The work pool the deployment runs on.
+- `work_queue_name`: The work queue the deployment runs on.
+
+
+**Methods:**
+
+#### `from_deployment`
+
+```python
+from_deployment(cls, deployment: DeploymentResponse, flow_name: str) -> 'DeploymentInfo'
+```
+
+Build a DeploymentInfo from a Prefect deployment.
+
+**Args:**
+- `deployment`: A deployment read with `sync_prefect_client`.
+- `flow_name`: The name of the deployment's flow, which the deployment
+only references by `flow_id`.
+
+**Returns:**
+- The same deployment.
+
+
+### `FlowRunInfo`
+
+
+A flow run in Orbitra Flows.
+
+The fields keep the names of Prefect's FlowRun, so the JSON printed by the
+CLI keeps the keys and formats it had when it printed FlowRun directly.
+The current state is flattened into the state_* fields, and FlowRun fields
+internal to Prefect are left out.
+
+**Attributes:**
+- `id`: The Prefect flow run ID.
+- `name`: The flow run name, such as "swift-otter".
+- `flow_id`: The ID of the flow that ran.
+- `deployment_id`: The deployment the run was created from, if any.
+- `state_type`: The state type, such as StateType.COMPLETED.
+- `state_name`: The state name, such as "Completed" or "Late".
+- `state_message`: The message of the current state, such as the
+error of a failed run.
+- `parameters`: The parameters the flow run received.
+- `tags`: The flow run tags.
+- `work_pool_name`: The work pool the run was submitted to.
+- `work_queue_name`: The work queue the run was submitted to.
+- `created`: When the flow run was created.
+- `expected_start_time`: When the run was scheduled to start.
+- `start_time`: When the run started. None if it has not.
+- `end_time`: When the run ended. None if it has not.
+- `total_run_time`: How long the run took. If it ran several times,
+such as on retries, the time of each run is summed.
+
+
+**Methods:**
+
+#### `from_flow_run`
+
+```python
+from_flow_run(cls, flow_run: FlowRun) -> 'FlowRunInfo'
+```
+
+Build a FlowRunInfo from a Prefect FlowRun.
+
+**Args:**
+- `flow_run`: A flow run read with `sync_prefect_client`.
+
+**Returns:**
+- The same flow run.
+

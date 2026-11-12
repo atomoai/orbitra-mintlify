@@ -1,0 +1,154 @@
+---
+title: test_subject_reads
+sidebarTitle: test_subject_reads
+---
+
+# `orbitra.lake.tests.lake.test_subject_reads`
+
+
+Readers under an access policy: clear errors outside the warehouse (ORBITRA-1017), with Unity Catalog mocked.
+
+## Classes
+
+### `TestGetTableData`
+
+
+get_table_data decides on the loadTable it already does, with no new call.
+
+
+**Methods:**
+
+#### `test_client_mode_reads_as_today`
+
+```python
+test_client_mode_reads_as_today(self, config: dict[str, str])
+```
+
+Test that a table without server mode is scanned as today, with no new call.
+
+
+#### `test_server_mode_raises`
+
+```python
+test_server_mode_raises(self)
+```
+
+Test that a table in server planning mode raises LakePolicyError, and nothing is scanned.
+
+
+#### `test_service_keeps_the_error_type`
+
+```python
+test_service_keeps_the_error_type(self)
+```
+
+Test that DBService.get_table_data keeps LakePolicyError (it used to wrap every ValueError in LakeError).
+
+
+### `TestRunQueryLocal`
+
+
+run_query(engine='local') checks the tables only after a storage access error.
+
+
+**Methods:**
+
+#### `test_a_name_that_is_not_a_table_is_ignored`
+
+```python
+test_a_name_that_is_not_a_table_is_ignored(self)
+```
+
+Test that a CTE name answers 404 to the lookup and is skipped; the next table is checked.
+
+
+#### `test_client_tables_keep_the_original_error`
+
+```python
+test_client_tables_keep_the_original_error(self)
+```
+
+Test that a storage error with no table in server mode keeps the DuckDB error (for example, a storage firewall).
+
+
+#### `test_cte_with_the_name_of_the_table_it_reads`
+
+```python
+test_cte_with_the_name_of_the_table_it_reads(self)
+```
+
+Test bohr's thread 15513 finding 3: WITH contratos AS (SELECT * FROM contratos ...) hid the table from the check.
+
+Every table-like name is checked now, so the storage error becomes LakePolicyError.
+
+
+#### `test_doubt_keeps_the_original_error`
+
+```python
+test_doubt_keeps_the_original_error(self, failure: str)
+```
+
+Test that a query that does not parse, or a failed GET, keeps the original error.
+
+
+#### `test_every_table_like_name_is_listed`
+
+```python
+test_every_table_like_name_is_listed(self)
+```
+
+Test that query_tables lists CTE names too, in the order sqlglot finds them and without repeats.
+
+
+#### `test_other_errors_make_no_call`
+
+```python
+test_other_errors_make_no_call(self)
+```
+
+Test that an error that is not a storage access error is raised as it is, with no call.
+
+
+#### `test_server_table_raises_policy_error`
+
+```python
+test_server_table_raises_policy_error(self, caplog, message: str)
+```
+
+Test that a storage error on a table in server mode becomes LakePolicyError, and the credentials never reach the log.
+
+
+#### `test_success_makes_no_new_call`
+
+```python
+test_success_makes_no_new_call(self)
+```
+
+Test that a query that works makes no new call.
+
+
+### `TestRunQueryRemote`
+
+
+run_query(engine='remote') translates the errors of more than one policy.
+
+
+**Methods:**
+
+#### `test_multiple_policies`
+
+```python
+test_multiple_policies(self, code: str, monkeypatch)
+```
+
+Test that the warehouse errors of more than one filter or mask become LakePolicyError with the table and the code.
+
+
+#### `test_other_errors_are_raised_as_they_are`
+
+```python
+test_other_errors_are_raised_as_they_are(self, monkeypatch)
+```
+
+Test that another warehouse error is not translated.
+

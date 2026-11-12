@@ -1,0 +1,31 @@
+---
+title: lake_error
+sidebarTitle: lake_error
+---
+
+# `orbitra.lake.models.lake_error`
+
+## Classes
+
+### `LakeError`
+
+
+Base class for exceptions related to the lake module.
+
+
+### `LakeAuthError`
+
+
+Raised when an Azure AD credential flow fails (OBO, client credentials, etc.).
+
+
+### `LakePolicyError`
+
+
+Raised when a row filter or column mask cannot be applied or read.
+
+Examples: the caller is not in the namespace manager group and the call changes the policies of the
+table, the declaration omits a policy of the table or changes more than one existing policy, the
+tenant's lake is not set up for policies, or a policy that the SDK does not own conflicts with the
+declaration. Nothing is changed when it is raised before the apply starts.
+

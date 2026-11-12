@@ -1,0 +1,38 @@
+---
+title: utils
+sidebarTitle: utils
+---
+
+# `orbitra.flows.utils`
+
+## Functions
+
+### `clean_resource_name`
+
+```python
+clean_resource_name(name: str) -> str
+```
+
+### `read_all_pages`
+
+```python
+read_all_pages(read_page: Callable[..., list], **filters: Any) -> list
+```
+
+
+Call a paginated Prefect `read_*` method until every page has been read.
+
+The Prefect server caps each response, so a single call would silently
+drop the rest. Pages are requested with an explicit `limit` and an
+increasing `offset`, stopping at the first page shorter than `page_size`.
+
+**Args:**
+- `read_page`: A SyncPrefectClient method that accepts `limit` and `offset`,
+such as `read_deployments` or `read_flows`.
+- `page_size`: The `limit` of each call. Defaults to 200, the Prefect
+server's PREFECT_API_DEFAULT_LIMIT.
+- `**filters`: Keyword arguments passed to `read_page` on every call.
+
+**Returns:**
+- Every object returned, in the order the server sent them.
+

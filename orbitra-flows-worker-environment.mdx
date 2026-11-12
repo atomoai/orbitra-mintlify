@@ -1,0 +1,70 @@
+---
+title: environment
+sidebarTitle: environment
+---
+
+# `orbitra.flows.worker.environment`
+
+
+The uv environment a bundle runs in: one venv per bundle, built once and reused by its runs.
+
+## Functions
+
+### `engine_command`
+
+```python
+engine_command(environment: ProjectEnvironment) -> str
+```
+
+### `engine_environment`
+
+```python
+engine_environment(environment: ProjectEnvironment) -> dict[str, Optional[str]]
+```
+
+
+Job environment overrides: ``None`` removes a variable from the engine's environment.
+
+
+### `ensure_python`
+
+```python
+ensure_python(uv: str, source: Path) -> None
+```
+
+
+Install the Python the project pins (``.python-version``, ``requires-python``) if missing.
+
+
+### `find_uv`
+
+```python
+find_uv() -> str
+```
+
+## Classes
+
+### `UvError`
+
+
+uv could not prepare the environment a bundle needs.
+
+
+### `ProjectEnvironment`
+
+### `EnvironmentStore`
+
+
+Venvs under ``root``, one per bundle: bundles never share, so none changes another's.
+
+
+**Methods:**
+
+#### `prepare`
+
+```python
+prepare(self, source: Path, key: str, log: Callable[[str], None]) -> ProjectEnvironment
+```
+
+Sync the venv ``<root>/<key>`` from the bundle at ``source``; ``key`` names the bundle.
+

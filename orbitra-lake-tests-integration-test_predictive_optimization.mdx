@@ -1,0 +1,83 @@
+---
+title: test_predictive_optimization
+sidebarTitle: test_predictive_optimization
+---
+
+# `orbitra.lake.tests.integration.test_predictive_optimization`
+
+## Classes
+
+### `TestPredictiveOptimizationIntegration`
+
+
+Runs Databricks OPTIMIZE / VACUUM for real against SDK tables and pins that the SDK keeps working afterwards.
+
+Databricks Predictive Optimization periodically runs OPTIMIZE and VACUUM on Unity Catalog tables. ORBITRA-908
+showed that OPTIMIZE compacts a partitioned SDK table into a single file written under the unpartitioned spec,
+and that in this state a partition overwrite silently became an append. The fix is covered by unit tests that
+*simulate* that file layout (`_add_external_string_file`, `_create_table_evolved_from_unpartitioned` in
+`orbitra/lake/tests/lake/test_data.py`); this class is the real proof, using Databricks as the adversary.
+
+Table contents are pinned with pytest-snapshot (``snapshots/test_predictive_optimization/<test>/<step>.json``),
+sorted by (country, id) so the files are deterministic and a duplicated row shows up as an extra record.
+
+Every scenario owns its table, and every table is registered in ``TABLES_TO_CLEANUP`` so the class fixture
+drops it even when a test fails halfway. Each remote call is timed and logged: OPTIMIZE on a cold SQL warehouse
+takes tens of seconds, so the scenarios issue as few of them as possible.
+
+
+**Methods:**
+
+#### `test_custom_columns_overwrite_after_optimize`
+
+```python
+test_custom_columns_overwrite_after_optimize(self, snapshot: Snapshot)
+```
+
+Custom-columns overwrite on the compacted file, with and without the partition column among the keys.
+
+
+#### `test_filtered_read_and_partition_delete_after_optimize`
+
+```python
+test_filtered_read_and_partition_delete_after_optimize(self, snapshot: Snapshot)
+```
+
+A partition filter prunes correctly inside the compacted file, and a partition delete removes exactly that partition.
+
+
+#### `test_partition_overwrite_after_optimize_replaces_only_touched_partition`
+
+```python
+test_partition_overwrite_after_optimize_replaces_only_touched_partition(self, snapshot: Snapshot)
+```
+
+The ORBITRA-908 scenario for real: after OPTIMIZE the overwritten partition is replaced, the others survive, no duplicates.
+
+
+#### `test_repeated_optimize_and_overwrite_cycle`
+
+```python
+test_repeated_optimize_and_overwrite_cycle(self, snapshot: Snapshot)
+```
+
+Append, OPTIMIZE, overwrite, OPTIMIZE, overwrite: accumulated specs never trip the shrunk-scope guard.
+
+
+#### `test_unpartitioned_table_reads_and_writes_after_optimize`
+
+```python
+test_unpartitioned_table_reads_and_writes_after_optimize(self, snapshot: Snapshot)
+```
+
+Baseline: OPTIMIZE on an unpartitioned table changes the file layout only; reads, overwrite and append stay correct.
+
+
+#### `test_vacuum_after_optimize_and_overwrite`
+
+```python
+test_vacuum_after_optimize_and_overwrite(self, snapshot: Snapshot)
+```
+
+The real Predictive Optimization sequence, OPTIMIZE then VACUUM: the table keeps reading, appending and overwriting.
+

@@ -1,0 +1,440 @@
+---
+title: test_policy_compiler
+sidebarTitle: test_policy_compiler
+---
+
+# `orbitra.lake.tests.lake.test_policy_compiler`
+
+
+Golden and unit tests for the pure policy compiler (no network).
+
+## Functions
+
+### `test_hash_column_name_is_defined_once`
+
+```python
+test_hash_column_name_is_defined_once()
+```
+
+
+Test that the SDK code spells the __orbitra_hash__ column name in one place: HASH_COLUMN in table_schema.py.
+
+
+## Classes
+
+### `TestGolden`
+
+
+Golden files: SQL of every UDF and the PolicyInfo JSON. Update with --snapshot-update after review.
+
+
+**Methods:**
+
+#### `test_contratos`
+
+```python
+test_contratos(self, snapshot: Snapshot)
+```
+
+Test the example of the parent card: three masks and a filter on one column.
+
+
+#### `test_filter_one_column`
+
+```python
+test_filter_one_column(self, snapshot: Snapshot)
+```
+
+Test a filter with one int column.
+
+
+#### `test_filter_two_columns_and_empty_where`
+
+```python
+test_filter_two_columns_and_empty_where(self, snapshot: Snapshot)
+```
+
+Test a filter with two columns, two groups in a rule and a rule without where.
+
+
+#### `test_mask_functions`
+
+```python
+test_mask_functions(self, snapshot: Snapshot)
+```
+
+Test the SQL of each mask action on each allowed type.
+
+
+### `TestMaskBodies`
+
+
+Properties of the mask bodies. The spec vectors run on Databricks in the integration suite.
+
+
+**Methods:**
+
+#### `test_a_udf_matches_its_name_until_its_spec_changes`
+
+```python
+test_a_udf_matches_its_name_until_its_spec_changes(self, monkeypatch)
+```
+
+Test that every UDF the SDK names matches its name, also one of another SDK version, and that an edit does not.
+
+
+#### `test_mask_alphanum_replaces_digits_last`
+
+```python
+test_mask_alphanum_replaces_digits_last(self)
+```
+
+Test that letters become x before digits become n, so a letter n of the input does not survive.
+
+
+#### `test_mask_body_change_gives_a_new_name`
+
+```python
+test_mask_body_change_gives_a_new_name(self, monkeypatch)
+```
+
+Test that a new mask body (a future SDK release) gives a new UDF name with the same prefix.
+
+
+#### `test_mask_function_names`
+
+```python
+test_mask_function_names(self, action: str, sdk_type: str, prefix: str)
+```
+
+Test the shared mask UDF names: action, Unity Catalog type and hash8 of the spec, in lowercase.
+
+
+#### `test_mask_to_fixed_value_constants`
+
+```python
+test_mask_to_fixed_value_constants(self)
+```
+
+Test the spec constants of mask-to-fixed-value.
+
+
+#### `test_no_body_for_unsupported_type`
+
+```python
+test_no_body_for_unsupported_type(self)
+```
+
+Test that an action without a body for a type raises.
+
+
+#### `test_timestamp_truncation_does_not_use_the_session_time_zone`
+
+```python
+test_timestamp_truncation_does_not_use_the_session_time_zone(self)
+```
+
+Test that TIMESTAMP_NTZ is truncated through DATE, not through date_trunc (which returns TIMESTAMP).
+
+
+#### `test_uc_type`
+
+```python
+test_uc_type(self, sdk_type: str, expected: str)
+```
+
+Test the SDK to Unity Catalog type map.
+
+
+#### `test_uc_type_unknown`
+
+```python
+test_uc_type_unknown(self)
+```
+
+Test that an unknown type raises.
+
+
+### `TestEscape`
+
+
+Every generated literal goes through one escape function.
+
+
+**Methods:**
+
+#### `test_control_characters_refused`
+
+```python
+test_control_characters_refused(self, value: str)
+```
+
+Test that control characters are refused.
+
+
+#### `test_filter_literals_are_escaped`
+
+```python
+test_filter_literals_are_escaped(self)
+```
+
+Test that groups and where values in the filter body are escaped.
+
+
+#### `test_sql_string`
+
+```python
+test_sql_string(self, value: str, expected: str)
+```
+
+Test the escape of apostrophe, backslash (also at the end), %, _, accents, OR TRUE and --.
+
+
+### `TestRowFilter`
+
+
+Semantics of the row filter UDF and policy.
+
+
+**Methods:**
+
+#### `test_declaration_order_does_not_change_anything`
+
+```python
+test_declaration_order_does_not_change_anything(self)
+```
+
+Test that reordering columns, access, to, where keys and values gives the same output.
+
+
+#### `test_exempt_principals_only_in_except`
+
+```python
+test_exempt_principals_only_in_except(self)
+```
+
+Test that exempt principals and except_groups are in the policy EXCEPT and never in a UDF body.
+
+
+#### `test_hash_covers_the_whole_spec`
+
+```python
+test_hash_covers_the_whole_spec(self)
+```
+
+Test that the spec hash changes with the params, the return type and the body, and ignores name and comment.
+
+
+#### `test_int_to_long_changes_the_name`
+
+```python
+test_int_to_long_changes_the_name(self)
+```
+
+Test that changing a filter column from int to long changes the UDF name.
+
+
+#### `test_name_is_stable_and_lowercase`
+
+```python
+test_name_is_stable_and_lowercase(self)
+```
+
+Test that the filter UDF name is stable between runs and in lowercase.
+
+
+#### `test_names_do_not_collide_across_schema_and_table`
+
+```python
+test_names_do_not_collide_across_schema_and_table(self)
+```
+
+Test that schema a_b with table c and schema a with table b_c get different filter UDF names.
+
+
+#### `test_parameters_follow_the_slots`
+
+```python
+test_parameters_follow_the_slots(self)
+```
+
+Test that the parameters and the conditions follow the slot order, not the name order.
+
+
+#### `test_value_change_changes_the_name`
+
+```python
+test_value_change_changes_the_name(self)
+```
+
+Test that a new value in where gives a new UDF name (blue-green swap).
+
+
+#### `test_where_empty_means_all_rows_for_the_groups`
+
+```python
+test_where_empty_means_all_rows_for_the_groups(self)
+```
+
+Test that a rule without where checks only the groups, next to a rule with where.
+
+
+### `TestSlots`
+
+
+Stable slots, read from the current tags of the columns.
+
+
+**Methods:**
+
+#### `test_current_slot_is_kept_and_new_column_gets_lowest_free`
+
+```python
+test_current_slot_is_kept_and_new_column_gets_lowest_free(self)
+```
+
+Test that columns keep their slot and a new column gets the lowest slot no column has.
+
+
+#### `test_filter_slots_are_1_to_6`
+
+```python
+test_filter_slots_are_1_to_6(self)
+```
+
+Test that filter slots stop at 6, the values of the orbitra_filter governed tag (ORBITRA-1014).
+
+
+#### `test_freed_slot_is_used_after_the_tag_leaves`
+
+```python
+test_freed_slot_is_used_after_the_tag_leaves(self)
+```
+
+Test that once the old tag is gone, the slot is free again.
+
+
+#### `test_inserting_a_masked_column_does_not_change_the_others`
+
+```python
+test_inserting_a_masked_column_does_not_change_the_others(self)
+```
+
+Test that a new masked column at the start or in the middle keeps the slot and policy of the others.
+
+
+#### `test_invalid_and_duplicate_current_slots_are_reassigned`
+
+```python
+test_invalid_and_duplicate_current_slots_are_reassigned(self)
+```
+
+Test that a slot outside the range or held twice is not kept.
+
+
+#### `test_no_free_slot`
+
+```python
+test_no_free_slot(self)
+```
+
+Test that running out of slots raises.
+
+
+#### `test_reordering_columns_changes_nothing`
+
+```python
+test_reordering_columns_changes_nothing(self)
+```
+
+Test that reordering columns gives the same output, with and without current tags.
+
+
+#### `test_tags_are_matched_case_insensitively_and_by_tag`
+
+```python
+test_tags_are_matched_case_insensitively_and_by_tag(self)
+```
+
+Test that Unity Catalog lowercase names match, and that the other tag does not take a slot.
+
+
+#### `test_without_tags_alphabetical`
+
+```python
+test_without_tags_alphabetical(self)
+```
+
+Test that without tags the slots follow the alphabetical order of the names.
+
+
+### `TestCompilerValidation`
+
+
+Checks that need the exempt principals or the whole table, done before any write.
+
+
+**Methods:**
+
+#### `test_columns_that_collide_in_lowercase`
+
+```python
+test_columns_that_collide_in_lowercase(self)
+```
+
+Test that two columns with the same lowercase name are refused.
+
+
+#### `test_empty_exempt_list`
+
+```python
+test_empty_exempt_list(self)
+```
+
+Test that an empty exempt list is refused when a part is present.
+
+
+#### `test_name_length`
+
+```python
+test_name_length(self)
+```
+
+Test that a policy name longer than 255 characters is refused.
+
+
+#### `test_nothing_present_gives_nothing`
+
+```python
+test_nothing_present_gives_nothing(self)
+```
+
+Test that None parts and the removal forms produce no output, even with no exempt principals.
+
+
+#### `test_policy_names_are_lowercase`
+
+```python
+test_policy_names_are_lowercase(self)
+```
+
+Test that Contratos.Documento gives lowercase names.
+
+
+#### `test_principal_limit`
+
+```python
+test_principal_limit(self)
+```
+
+Test the limit of 20 principals per policy: 1 + exempt + except_groups, counted as a sum.
+
+
+#### `test_shared_mask_function_is_listed_once`
+
+```python
+test_shared_mask_function_is_listed_once(self)
+```
+
+Test that two columns with the same action and type share one UDF.
+

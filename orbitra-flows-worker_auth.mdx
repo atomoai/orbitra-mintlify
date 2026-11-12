@@ -1,0 +1,31 @@
+---
+title: worker_auth
+sidebarTitle: worker_auth
+---
+
+# `orbitra.flows.worker_auth`
+
+
+Opt-in Entra authentication for standard Prefect workers and their clients.
+
+## Functions
+
+### `prefect_auth`
+
+```python
+prefect_auth(api_url: str, credential: TokenCredential) -> Iterator[None]
+```
+
+
+Authenticate Prefect clients within a dedicated worker process.
+
+The credential is obtained from Orbitra's login chain by the startup plugin.
+Tokens are requested again for every HTTP request and websocket handshake.
+Azure Identity handles caching and refresh, including the CLI's persistent
+login cache. No token is written to Prefect settings or child environments.
+
+Install before creating clients and keep the context open for their lifetime.
+Hooks are process-wide: use a dedicated worker process, not concurrent contexts
+for multiple workspaces. HTTP redirects are rejected to prevent forwarding
+bearer credentials to a different path or origin.
+

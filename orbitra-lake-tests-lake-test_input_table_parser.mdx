@@ -1,0 +1,68 @@
+---
+title: test_input_table_parser
+sidebarTitle: test_input_table_parser
+---
+
+# `orbitra.lake.tests.lake.test_input_table_parser`
+
+## Functions
+
+### `test_long_empty_column_has_64_bit_arrow_type`
+
+```python
+test_long_empty_column_has_64_bit_arrow_type()
+```
+
+
+Keep an explicit 64-bit schema even without rows.
+
+
+### `test_long_preserves_fractional_truncation`
+
+```python
+test_long_preserves_fractional_truncation(source_dtype)
+```
+
+
+Keep the previous NumPy cast semantics for fractional input.
+
+
+### `test_long_preserves_legacy_linux_hash_with_float_columns`
+
+```python
+test_long_preserves_legacy_linux_hash_with_float_columns(float_type)
+```
+
+
+Match the pre-ORBITRA-952 Linux hash for a mixed long/float row.
+
+
+### `test_long_preserves_signed_64_bit_values`
+
+```python
+test_long_preserves_signed_64_bit_values(monkeypatch, windows_long)
+```
+
+
+Preserve long values even on platforms where C long is only 32 bits.
+
+
+### `test_long_rejects_invalid_values`
+
+```python
+test_long_rejects_invalid_values(value)
+```
+
+
+Keep rejecting invalid or out-of-range values from object columns.
+
+### `test_long_rejects_nulls_as_before`
+
+```python
+test_long_rejects_nulls_as_before(kind, values)
+```
+
+
+Keep the non-nullable integer conversion used on Linux before ORBITRA-952.
+
+

@@ -1,0 +1,104 @@
+---
+title: run_registry
+sidebarTitle: run_registry
+---
+
+# `orbitra.lake.tests.integration.run_registry`
+
+
+Know which integration runs are alive, and clean up what dead runs left behind.
+
+Each run gets a run id (6 hex characters). Its tables are ``it_<run id>_<class>_<name>`` (see isolation.py) and its
+saved queries live under ``.orbitra/integration-runs/<run id>/`` in the raw container of the e2e namespace. The run
+holds a lease on the blob ``.orbitra/integration-runs/<run id>/lease`` while it runs, renewed in the background.
+
+At start, a run drops the tables and saved queries of every run id whose lease blob is not leased. A killed run loses
+its lease within LEASE_SECONDS. Only names that match ``it_<6 hex>_`` are ever dropped, and never the ones of a run
+that holds its lease. Runs never wait for each other.
+
+A table with access policies also has Orbitra UDFs in the schema, named from the hash of its full name: the lock
+``__orbitra_lock_<hash8>`` while a change runs, and the filter UDF ``__orbitra_rf_<hash8>_<spec>``. For each table of a
+dead run, the cleanup deletes the lock of that table (the dead run held it; no live run uses the table), drops the
+table with ``DBService.drop_table`` (it takes the lock, drops the table and its filter UDF), then deletes any other
+filter UDF with the prefix of that table (a change that died between its create and its policy). A UDF counts only
+when its name is computed from the full name of a dead run's table, with ``lock_function_name`` and
+``row_filter_function_prefix``; the shared mask UDFs ``__orbitra_mask_*`` are never deleted, and the policies go with
+the table. A lock or filter UDF whose table is already gone has no name to match and stays (a manager drops it by
+hand; the lock error names it). Two runs that start together can clean the same dead run and delete each other's
+lock on its tables; both only remove that dead run's objects, so nothing else changes.
+
+
+## Functions
+
+### `clean_dead_runs`
+
+```python
+clean_dead_runs(client: OrbitraLakeClient, namespace: str) -> dict[str, list[str]]
+```
+
+
+Drop the tables (with their lock and filter UDFs) and saved queries of runs that are not alive. Return what was removed, by run id.
+
+Tables, UDFs and directories are listed before the leases are read: a run takes its lease before it creates
+anything, so a run that is alive when the leases are read still holds the lease that covers what was listed.
+``client`` is the janitor's own: its catalog is wrapped to retry Unity's rejections of concurrent drops.
+
+
+### `new_run_id`
+
+```python
+new_run_id() -> str
+```
+
+
+A random run id of 6 hex characters.
+
+
+### `saved_query_root`
+
+```python
+saved_query_root(run_id: str, class_tag: str) -> str
+```
+
+
+The raw storage directory that holds the saved queries of one test class in one run.
+
+
+### `start_run`
+
+```python
+start_run(namespace: str, run_id: str) -> RunLease
+```
+
+
+Register ``run_id`` as alive, then clean up after dead runs. Called once per run, in the xdist controller.
+
+
+### `table_prefix`
+
+```python
+table_prefix(run_id: str, class_tag: str) -> str
+```
+
+
+The table prefix of one test class in one run.
+
+
+## Classes
+
+### `RunLease`
+
+
+The lease that marks one run as alive, renewed by a daemon thread.
+
+
+**Methods:**
+
+#### `release`
+
+```python
+release(self) -> None
+```
+
+Stop renewing, delete the lease blob, then the run directory (the class teardowns emptied it).
+

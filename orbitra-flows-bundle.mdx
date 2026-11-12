@@ -1,0 +1,53 @@
+---
+title: bundle
+sidebarTitle: bundle
+---
+
+# `orbitra.flows.bundle`
+
+
+Package a flows project as a content-addressed bundle and publish it to a storage account container.
+
+## Functions
+
+### `main`
+
+```python
+main(argv: Optional[list[str]] = None) -> int
+```
+### `manifest`
+
+```python
+manifest(root: Path, repo: str, sha256: str, entrypoints: Iterable[str]) -> dict[str, Any]
+```
+
+### `tracked_files`
+
+```python
+tracked_files(root: Path) -> list[str]
+```
+
+
+The files git tracks under ``root``, sorted.
+
+
+### `upload`
+
+```python
+upload(ref: BundleRef, data: bytes, name: str, credential: Any) -> bool
+```
+
+
+Create blob ``name`` next to ``ref``; False when it already exists (content-addressed).
+
+
+### `write_bundle`
+
+```python
+write_bundle(root: Path, files: Iterable[str], output: Path) -> str
+```
+
+
+Write a reproducible .tar.gz of ``files`` and return its SHA-256.
+
+

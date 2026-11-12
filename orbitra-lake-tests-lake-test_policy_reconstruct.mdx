@@ -1,0 +1,198 @@
+---
+title: test_policy_reconstruct
+sidebarTitle: test_policy_reconstruct
+---
+
+# `orbitra.lake.tests.lake.test_policy_reconstruct`
+
+
+Tests for the inverse of the compiler: rebuild mask and row_filter from the Orbitra objects.
+
+## Classes
+
+### `TestRoundTrip`
+
+
+compile, then reconstruct, gives back the declaration.
+
+
+**Methods:**
+
+#### `test_client_policies_without_tag_match_are_ignored`
+
+```python
+test_client_policies_without_tag_match_are_ignored(self, caplog)
+```
+
+Test that client row filter and mask policies without match columns do not count as Orbitra objects.
+
+
+#### `test_dropped_policy_does_not_stop_the_others`
+
+```python
+test_dropped_policy_does_not_stop_the_others(self, caplog)
+```
+
+Test that a client policy and dropped Orbitra masks listed first do not stop the next masks.
+
+
+#### `test_exempt_principals_unknown`
+
+```python
+test_exempt_principals_unknown(self)
+```
+
+Test that without the exempt list every except principal becomes an except group.
+
+
+#### `test_nothing_to_rebuild`
+
+```python
+test_nothing_to_rebuild(self)
+```
+
+Test that a table without Orbitra objects comes back unchanged, and client policies are ignored.
+
+
+#### `test_round_trip`
+
+```python
+test_round_trip(self, caplog)
+```
+
+Test that the rebuilt declaration compiles to the same objects, with exempt principals removed.
+
+
+### `TestTolerance`
+
+
+Objects that do not match the current schema are dropped with a warning.
+
+
+**Methods:**
+
+#### `test_body_edited_by_hand`
+
+```python
+test_body_edited_by_hand(self, caplog)
+```
+
+Test that a filter UDF whose body does not match its name is dropped.
+
+
+#### `test_body_with_another_shape`
+
+```python
+test_body_with_another_shape(self, body: str, caplog)
+```
+
+Test that a body the compiler does not generate is dropped.
+
+
+#### `test_changed_type`
+
+```python
+test_changed_type(self, caplog)
+```
+
+Test that a mask whose UDF no longer fits the column type is dropped.
+
+
+#### `test_filter_and_mask_on_the_same_column`
+
+```python
+test_filter_and_mask_on_the_same_column(self, caplog)
+```
+
+Test that when a filter column also has a mask in Unity Catalog, the mask stays and the filter is dropped.
+
+#### `test_mask_scope_edited_by_hand`
+
+```python
+test_mask_scope_edited_by_hand(self, change: dict[str, Any], caplog)
+```
+
+Test that a mask policy whose scope the declaration cannot represent is dropped, and the others stay.
+
+
+#### `test_mask_udf_of_another_type`
+
+```python
+test_mask_udf_of_another_type(self, caplog)
+```
+
+Test that a mask whose UDF type differs from the column type is dropped.
+
+
+#### `test_mask_udf_versions`
+
+```python
+test_mask_udf_versions(self, function_name: str, expected: Any)
+```
+
+Test that any version of the UDF of the action and type gives the action, and other names are dropped.
+
+
+#### `test_missing_filter_udf`
+
+```python
+test_missing_filter_udf(self, caplog)
+```
+
+Test that a filter whose UDF is gone is dropped.
+
+
+#### `test_missing_tag`
+
+```python
+test_missing_tag(self, caplog)
+```
+
+Test that a filter whose column tag is gone is dropped, and a mask without its tag too.
+
+
+#### `test_removed_columns`
+
+```python
+test_removed_columns(self, caplog)
+```
+
+Test that a mask and a filter on columns that are gone are dropped.
+
+
+#### `test_return_type_edited_by_hand`
+
+```python
+test_return_type_edited_by_hand(self, caplog)
+```
+
+Test that a filter UDF whose return type does not match its name is dropped.
+
+
+#### `test_row_filter_scope_edited_by_hand`
+
+```python
+test_row_filter_scope_edited_by_hand(self, change: dict[str, Any], caplog)
+```
+
+Test that a row filter policy whose scope the declaration cannot represent is dropped.
+
+
+#### `test_two_masks_on_one_column`
+
+```python
+test_two_masks_on_one_column(self, caplog)
+```
+
+Test that a second Orbitra mask on the same column is dropped.
+
+
+#### `test_two_orbitra_row_filters`
+
+```python
+test_two_orbitra_row_filters(self, caplog)
+```
+
+Test that two Orbitra row filter policies on one table are dropped.
+
+

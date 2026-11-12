@@ -1,0 +1,308 @@
+---
+title: client
+sidebarTitle: client
+---
+
+# `orbitra.flows.client`
+
+## Functions
+
+### `get_flows_client`
+
+```python
+get_flows_client(environment: str | None = None) -> OrbitraFlowsClient
+```
+
+
+Get an authenticated OrbitraFlowsClient for the Orbitra Flows (Prefect) API.
+
+**Args:**
+- `environment`: The environment to get the API URL from. Defaults to
+None, which resolves it from the Orbitra settings sources.
+
+**Returns:**
+- An authenticated OrbitraFlowsClient instance.
+
+**Examples:**
+
+```python
+from orbitra.flows.client import get_flows_client
+
+client = get_flows_client()
+```
+
+
+## Classes
+
+### `OrbitraFlowsClient`
+
+
+A wrapper around SyncPrefectClient for interacting with Orbitra Flows.
+
+
+**Methods:**
+
+#### `api_url`
+
+```python
+api_url(self) -> str
+```
+
+Get the API URL of the Orbitra Flows server.
+
+
+#### `get_deployment_runs`
+
+```python
+get_deployment_runs() -> list[FlowRunInfo]
+```
+
+Get the flow runs of a deployment by its decorated callable.
+
+The deployment name is resolved the same way as in `run_deployment`.
+
+**Args:**
+- `deployment`: The callable decorated with @orbitra_deployment.
+- `orbitra_flows_name_suffix`: Suffix appended to the flow name. When omitted,
+reads from ClientSettings.orbitra_flows_name_suffix, and falls back to
+no suffix when that is unset too.
+- `orbitra_flows_deployment_suffix`: Suffix appended to the deployment name. When
+omitted, reads from ClientSettings.orbitra_flows_deployment_suffix, and
+falls back to no suffix when that is unset too.
+- `limit`: Maximum number of flow runs to return, from 1 to 100. Defaults to 10.
+- `offset`: Number of flow runs to skip, for pagination. Defaults to 0.
+- `state_types`: Only return runs in one of these
+states. Defaults to None (any state).
+- `start_time`: Only return runs that started at or after
+this time. A naive datetime is read as UTC. Defaults to None (no lower bound).
+- `end_time`: Only return runs that started at or before
+this time, so a run still going counts by when it started. A naive datetime
+is read as UTC. Defaults to None (no upper bound).
+- `sort`: The order of the returned runs. Defaults to
+FlowRunSort.START_TIME_DESC (most recent first).
+
+**Returns:**
+- list\[FlowRunInfo]: The deployment's flow runs. Empty if it has none.
+
+**Raises:**
+- `ValueError`: If `limit` is outside 1..100 or `offset` is negative.
+- `FlowsError`: If the deployment does not exist.
+
+**Examples:**
+
+```python
+from orbitra.flows.client import get_flows_client
+from prefect.client.schemas.objects import StateType
+from my_flows import my_flow
+
+client = get_flows_client()
+failed_runs = client.get_deployment_runs(
+    my_flow, state_types=[StateType.FAILED, StateType.CRASHED]
+)
+```
+
+
+#### `get_deployment_runs_by_name`
+
+```python
+get_deployment_runs_by_name(self, deployment_name: str) -> list[FlowRunInfo]
+```
+
+Get the flow runs of a Prefect deployment by name.
+
+Only runs created from this deployment are returned, not every run of
+its flow.
+
+**Args:**
+- `deployment_name`: The name of the deployment in the format &lt;FLOW_NAME&gt;/&lt;DEPLOYMENT_NAME&gt;.
+- `limit`: Maximum number of flow runs to return, from 1 to 100. Defaults to 10.
+- `offset`: Number of flow runs to skip, for pagination. Defaults to 0.
+- `state_types`: Only return runs in one of these
+states. Defaults to None (any state).
+- `start_time`: Only return runs that started at or after
+this time. A naive datetime is read as UTC. Defaults to None (no lower bound).
+- `end_time`: Only return runs that started at or before
+this time, so a run still going counts by when it started. A naive datetime
+is read as UTC. Defaults to None (no upper bound).
+- `sort`: The order of the returned runs. Defaults to
+FlowRunSort.START_TIME_DESC (most recent first).
+
+**Returns:**
+- list\[FlowRunInfo]: The deployment's flow runs. Empty if it has none.
+
+**Raises:**
+- `ValueError`: If `limit` is outside 1..100 or `offset` is negative.
+- `FlowsError`: If the deployment does not exist.
+
+**Examples:**
+
+```python
+from orbitra.flows.client import get_flows_client
+
+client = get_flows_client()
+runs = client.get_deployment_runs_by_name("my-flow/my-deployment", limit=5)
+for run in runs:
+    print(run.name, run.state_type)
+```
+
+
+#### `get_flow_run_logs_by_id`
+
+```python
+get_flow_run_logs_by_id(self, flow_run_id: str | UUID, limit: Optional[int] = None) -> list[Log]
+```
+
+Get the logs emitted by a flow run, ordered oldest to newest.
+
+**Args:**
+- `flow_run_id`: The ID of the flow run to get logs for.
+- `limit`: Maximum number of log records to return. Defaults to None (no limit).
+
+**Returns:**
+- list\[Log]: The flow run's logs sorted by timestamp ascending. Empty if the run has no
+logs or if no run exists with the given ID.
+
+**Examples:**
+
+```python
+from orbitra.flows.client import get_flows_client
+
+client = get_flows_client()
+logs = client.get_flow_run_logs_by_id("00000000-0000-0000-0000-000000000000")
+for log in logs:
+    print(log.timestamp, log.message)
+```
+
+#### `list_deployments`
+
+```python
+list_deployments(self) -> list[DeploymentInfo]
+```
+
+List the deployments registered in Orbitra Flows.
+
+Every page of the server response is read, so the result is never
+truncated by the server's default limit.
+
+**Args:**
+- `name_like`: Case-insensitive partial match on the deployment name.
+Defaults to None (all deployments).
+- `sort`: The order of the returned deployments. Defaults to
+DeploymentSort.NAME_ASC.
+
+**Returns:**
+- list\[DeploymentInfo]: The matching deployments. Empty if none match.
+
+**Examples:**
+
+```python
+from orbitra.flows.client import get_flows_client
+
+client = get_flows_client()
+for deployment in client.list_deployments(name_like="daily"):
+    print(deployment.name, deployment.paused)
+```
+
+
+#### `run_deployment`
+
+```python
+run_deployment(**kwargs: Any) -> str
+```
+
+Run a deployment by its decorated callable.
+
+Only ``deployment`` is positional; everything else must be passed by
+keyword, so a flow parameter can never be mistaken for a suffix.
+
+**Args:**
+- `deployment`: The callable decorated with @orbitra_deployment.
+- `orbitra_flows_name_suffix`: Suffix appended to the flow name. When omitted,
+reads from ClientSettings.orbitra_flows_name_suffix, and falls back to
+no suffix when that is unset too.
+- `orbitra_flows_deployment_suffix`: Suffix appended to the deployment name. When
+omitted, reads from ClientSettings.orbitra_flows_deployment_suffix, and
+falls back to no suffix when that is unset too.
+- `**kwargs`: Parameters forwarded to the flow run.
+
+**Returns:**
+- The ID of the created flow run.
+
+**Examples:**
+
+```python
+from orbitra.flows.client import get_flows_client
+from my_flows import my_flow
+
+client = get_flows_client()
+flow_run_id = client.run_deployment(my_flow, date="2024-01-01")
+```
+
+
+#### `run_deployment_by_name`
+
+```python
+run_deployment_by_name(self, deployment_name: str, parameters: Optional[dict] = None) -> str
+```
+
+Run a Prefect deployment by name.
+
+**Args:**
+- `deployment_name`: The name of the deployment to run in the format &lt;FLOW_NAME&gt;/&lt;DEPLOYMENT_NAME&gt;.
+- `parameters`: Parameters to pass to the flow run. Defaults to None.
+
+**Returns:**
+- The ID of the created flow run.
+
+**Examples:**
+
+```python
+from orbitra.flows.client import get_flows_client
+
+client = get_flows_client()
+flow_run_id = client.run_deployment_by_name("my-flow/my-deployment", parameters={"key": "value"})
+```
+
+
+#### `sync_prefect_client`
+
+```python
+sync_prefect_client(self) -> SyncPrefectClient
+```
+
+The underlying
+[SyncPrefectClient](https://docs.prefect.io/v3/api-ref/python/prefect-client-orchestration-__init__#syncprefectclient)
+instance for direct Prefect API access.
+
+
+#### `wait_for_flow_run`
+
+```python
+wait_for_flow_run(self, flow_run_id: str | UUID, poll_interval: float = 5.0, timeout: Optional[float] = None, raise_on_flow_failure: bool = True) -> FlowRunInfo
+```
+
+Poll a flow run until it reaches a terminal state.
+
+**Args:**
+- `flow_run_id`: The ID of the flow run to wait for.
+- `poll_interval`: Seconds between polling attempts. Defaults to 5.0.
+- `timeout`: Maximum seconds to wait before raising an error. Defaults to None (wait forever).
+- `raise_on_flow_failure`: If True, raise FlowsError on flow failure. If False, return the flow run instead. Defaults to True.
+
+**Returns:**
+- The flow run in its terminal state.
+
+**Raises:**
+- `FlowsError`: If the flow run fails, crashes, or is cancelled (only when raise_on_flow_failure=True).
+
+**Examples:**
+
+```python
+from orbitra.flows.client import get_flows_client
+
+client = get_flows_client()
+flow_run_id = client.run_deployment_by_name("my-flow/my-deployment")
+flow_run = client.wait_for_flow_run(flow_run_id, timeout=300)
+```
+
+
